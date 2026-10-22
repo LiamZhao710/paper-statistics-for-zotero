@@ -32,4 +32,13 @@ if __name__ == '__main__':
     (root/'blank.pdf').write_bytes(pdf([[],[]]))
     (root/'replacement.pdf').write_bytes(pdf([['Replacement paper','Figure 7. Replacement caption.']]))
     (root/'corrupt.pdf').write_bytes(b'%PDF-1.4\nnot a valid PDF')
+    (root/'structures.pdf').write_bytes(pdf([
+        ['Mathematical Structures','Definition 1. A definition is not a theorem.',
+         'Proposition 1. Every tree is connected.','Theorem 1. Let a solution exist.',
+         'Lemma 2.1. Let x be positive.','Corollary A.1. All solutions converge.',
+         'As shown in Theorem 99, this is only a mention.'],
+        ['Algorithms','Algorithm 1: Main iterative solver','Algorithm I. Repeated solver caption',
+         'Algorithm II: Second solver','Algorithm 9 is used in our experiments.'],
+        ['Equations','x = y + 1     (1)','z = 2*x     (2a)','z = 3*x     (2b)',
+         'f(x) <= 1     (A.1)','See Eq. (99) for the discussion.']]))
     print(root)

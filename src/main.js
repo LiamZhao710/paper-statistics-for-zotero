@@ -3,7 +3,8 @@ var PaperStatistics = (() => {
   "use strict";
   const C = PaperStatsCore;
   const PREF = "extensions.paperstatistics.";
-  const METRICS = { pages: "PDF Pages", words: "Words", figures: "Figures", tables: "Tables", references: "References" };
+  const METRICS = { pages: "PDF Pages", words: "Words", figures: "Figures", tables: "Tables",
+    statements: "Statements", algorithms: "Algorithms", equations: "Numbered Equations", references: "References" };
   let pluginID, rootURI, cachePath, worker, queue, observer, timer, saveTimer, refreshTimer;
   let alive = false, serial = 0, cache = {}, batch = null, diskWrites = Promise.resolve();
   const rows = new Map(), tracked = new Set(), epochs = new Map(), replies = new Map();
@@ -183,9 +184,14 @@ var PaperStatistics = (() => {
         ? `Partial (${r.indexedPages} / ${r.totalPages} pages extracted)` : r.textCompleteness);
       append("Analyzed PDF", r.filename);
       append("Last calculated", new Date(r.calculatedAt).toLocaleString());
-      append("Method", "Words include captions and references; figures/tables are caption estimates.");
+      append("Method", "Words include captions and references; structural counts are text heuristics.");
       append("Detected figures", r.figureIDs.join(", ") || "—");
       append("Detected tables", r.tableIDs.join(", ") || "—");
+      if (r.statementCounts) append("Statement breakdown", `Proposition ${r.statementCounts.proposition}; Theorem ${r.statementCounts.theorem}; Lemma ${r.statementCounts.lemma}; Corollary ${r.statementCounts.corollary}. Definitions excluded.`);
+      append("Detected statements", (r.statementIDs || []).join(", ") || "—");
+      append("Detected algorithms", (r.algorithmIDs || []).join(", ") || "—");
+      append("Detected equations", (r.equationIDs || []).join(", ") || "—");
+      append("Equation scope", r.equationScope || "Numbered display equations only");
       append("References", r.referenceReason);
       if (r.warning) append("Note", r.warning);
     }

@@ -17,7 +17,7 @@ async function fatal(e) {
 async function run() {
   if (started) return; started = true;
   const root = Services.prefs.getStringPref('paperstats.testRoot');
-  const report = { host:Zotero.version, startedAt:new Date().toISOString(), checks:[] };
+    const report = { host:Zotero.version, startedAt:new Date().toISOString(), checks:[] };
   const check = (name, condition, details) => {
     report.checks.push({name,passed:!!condition,details});
     if (!condition) throw Error('Failed: '+name+' '+JSON.stringify(details));
@@ -33,7 +33,12 @@ async function run() {
     const api=Zotero.PaperStatistics;
     check('real XPI bootstrap loaded',!!api);
     check('XPI active',addon?.isActive,addon?.getResourceURI().spec);
-    check('five official columns',api.columnIDs.length===5,api.columnIDs);
+    report.pluginVersion=addon.version;
+    const installedBytes=await IOUtils.read(PathUtils.join(root,'profile','extensions','paper-statistics@local.zotero.xpi'));
+    const hash=Cc['@mozilla.org/security/hash;1'].createInstance(Ci.nsICryptoHash);
+    hash.init(hash.SHA256);hash.update(installedBytes,installedBytes.length);
+    report.testedXpiSHA256=[...hash.finish(false)].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
+    check('eight official columns',api.columnIDs.length===8,api.columnIDs);
     check('official pane section',!!api.sectionID,api.sectionID);
     const parent=async title=>{
       const item=new Zotero.Item('journalArticle'); item.libraryID=Zotero.Libraries.userLibraryID;
@@ -66,6 +71,13 @@ async function run() {
     check('host numeric sorting',sortKeys.map(s=>Number(s.slice(0,16))).join(',')==='7,12,100',sortKeys);
     const noPDF=await parent('No PDF'); await api.request(noPDF);
     check('no PDF stays unknown',api.dataProvider(noPDF,'pages')==='');
+    const mathPaper=await parent('Paper Statistics mathematical structures');await attach(mathPaper,'structures.pdf');
+    const sr=await api.request(mathPaper,true);report.structureSample=sr;
+    check('actual PDF statement count excludes definitions and references',sr?.statements===4,sr?.statementIDs);
+    check('actual PDF statement breakdown',sr?.statementCounts?.proposition===1 && sr.statementCounts.theorem===1 && sr.statementCounts.lemma===1 && sr.statementCounts.corollary===1,sr?.statementCounts);
+    check('actual PDF algorithm captions deduplicate Roman and Arabic',sr?.algorithms===2,sr?.algorithmIDs);
+    check('actual PDF numbered equations',sr?.equations===4,sr?.equationIDs);
+    for(const metric of ['statements','algorithms','equations'])check('live column provider '+metric,!!api.dataProvider(mathPaper,metric),api.dataProvider(mathPaper,metric));
     const blank=await parent('Blank PDF');await attach(blank,'blank.pdf');const br=await api.request(blank,true);
     check('blank PDF pages, unknown words',br?.pages===2 && br.words===null && br.figures===null,br);
     const bad=await parent('Corrupt PDF');await attach(bad,'corrupt.pdf');const badResult=await api.request(bad,true);
@@ -89,6 +101,10 @@ async function run() {
     const cells=[...win.document.querySelectorAll('[data-pane]')].filter(el=>el.dataset.pane===api.sectionID);
     report.paneDOMMatches=cells.length;
     check('live pane rendered',cells.some(el=>el.textContent.includes('Analyzed PDF')),{text:cells.map(el=>el.textContent.slice(0,100)),pane:pane?{initialized:pane.initialized,hidden:pane.hidden,skipRender:pane.skipRender,itemID:pane.item?.id,open:pane.open,html:pane.outerHTML.slice(0,3000)}:null});
+    await win.ZoteroPane.selectItem(mathPaper.id);await sleep(600);
+    const mathPane=[...win.document.querySelectorAll('item-pane-custom-section')].find(el=>el.dataset.pane===api.sectionID);
+    if(mathPane){mathPane.open=true;mathPane.scrollIntoView({block:'center'});}await sleep(500);
+    check('new metrics and scope rendered in pane',mathPane?.textContent.includes('Statements: 4') && mathPane.textContent.includes('Algorithms: 2') && mathPane.textContent.includes('Numbered Equations: 4') && mathPane.textContent.includes('Definitions excluded.'),mathPane?.textContent.slice(0,1800));
     const column=Zotero.ItemTreeManager.getCustomColumns('main').find(c=>c.dataKey===key);
     const cell=column.renderCell(0,api.dataProvider(paper,'words'),{className:'test'},false,win.document);
     check('real document cell rendering',!!cell.textContent && !cell.textContent.startsWith('0000'),cell.textContent);

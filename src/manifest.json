@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Paper Statistics for Zotero",
-  "version": "0.1.0",
-  "description": "Local PDF pages, extracted words, caption-based figures and tables.",
+  "version": "0.2.0",
+  "description": "Local PDF pages, words, figures, tables, theorem-like statements, algorithms and numbered equations.",
   "author": "Paper Statistics contributors",
   "applications": {
     "zotero": {

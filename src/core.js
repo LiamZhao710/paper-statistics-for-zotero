@@ -1,7 +1,7 @@
 /* Pure algorithms shared by the background worker and Node tests. */
 (function (root) {
   "use strict";
-  const ALGORITHM_VERSION = 1;
+  const ALGORITHM_VERSION = 2;
   const tokenRE = /[\p{L}\p{N}]+(?:['’\-‐‑][\p{L}\p{N}]+)*/gu;
 
   function normalizeText(text) {
@@ -86,6 +86,116 @@
   class TableDetector {
     static detect(text, include = true) { return detectCaptions(text, "table", include); }
   }
+  // Headings, rather than mentions in running prose, are the evidence for these counts.
+  const structuralID = "(?:[A-Z]\\.\\d+(?:\\.\\d+)*|S\\d+(?:\\.\\d+)*|\\d+(?:\\.\\d+)*[a-z]?|[IVXLCDM]+)";
+  const referenceTail = /^(?:\(?see\b|and\b|or\b|shows?\b|states?\b|says?\b|implies?\b|ensures?\b|guarantees?\b|illustrates?\b|describes?\b|establishes?\b|proves?\b|provides?\b|gives?\b|suggests?\b|follows?\b|is\b|are\b|was\b|were\b|can\b|will\b|has\b|have\b|in\b|of\b|from\b|we\b|as\b|applies?\b|requires?\b|与|和|说明|表明|给出|可知|可得|证明了|是)/i;
+  function normalizeStructuralID(id) {
+    if (/^[IVXLCDM]+$/i.test(id)) return normalizedID(id);
+    return id.toUpperCase().replace(/\d+/g, n => String(Number(n)));
+  }
+  function structuralLines(text) {
+    let bibliography = false;
+    return normalizeText(text).split(/[\n\f]/).map(line => {
+      if (/^\s*(?:(?:\d+|[IVX]+)[.\s]+)?(?:references|bibliography|参考文献)\s*$/i.test(line)) bibliography = true;
+      else if (/^\s*(?:appendi(?:x|ces)\b|supplementary\s+(?:material|information)|附录)/i.test(line)) bibliography = false;
+      return bibliography ? "" : line;
+    });
+  }
+  function headingEvidence(lines, i, labels) {
+    const line = lines[i].trim();
+    const numbered = new RegExp("^(" + labels + ")\\.?\\s*(" + structuralID + ")(?=$|[\\s.:：)\\]])[.:：]?\\s*(.*)$", "i").exec(line);
+    if (numbered) {
+      const rest = numbered[3].trim();
+      if (referenceTail.test(rest)) return null;
+      if (!rest && !/\p{L}/u.test(lines[i + 1] || "")) return null;
+      const id = normalizeStructuralID(numbered[2]);
+      return id ? { kind: numbered[1].toLowerCase(), id, numbered: true } : null;
+    }
+    // Unnumbered declarations need an explicit heading boundary or a named heading.
+    const plain = new RegExp("^(" + labels + ")(?:[.:：]\\s*(.*)|\\s+(\\([^)]{2,120}\\))[.:：]?\\s*(.*)|\\s*)$", "i").exec(line);
+    if (!plain) return null;
+    const rest = (plain[2] || plain[4] || "").trim();
+    if (referenceTail.test(rest) || (!rest && !/\p{L}/u.test(lines[i + 1] || ""))) return null;
+    return { kind: plain[1].toLowerCase(), id: `unnumbered@${i + 1}`, numbered: false };
+  }
+  class StatementDetector {
+    static detect(text) {
+      const lines = structuralLines(text);
+      const names = { proposition: "proposition", theorem: "theorem", lemma: "lemma", corollary: "corollary",
+        "命题": "proposition", "定理": "theorem", "引理": "lemma", "推论": "corollary" };
+      const found = new Map();
+      for (let i = 0; i < lines.length; i++) {
+        const h = headingEvidence(lines, i, "Proposition|Theorem|Lemma|Corollary|命题|定理|引理|推论");
+        if (!h) continue;
+        const kind = names[h.kind];
+        found.set(`${kind}:${h.id}`, { ...h, kind });
+      }
+      const breakdown = { proposition: 0, theorem: 0, lemma: 0, corollary: 0 };
+      for (const h of found.values()) breakdown[h.kind]++;
+      return { count: found.size, ids: [...found.keys()], breakdown, method: "declaration-heading-heuristic" };
+    }
+  }
+  class AlgorithmDetector {
+    static detect(text) {
+      const lines = structuralLines(text), ids = new Set();
+      for (let i = 0; i < lines.length; i++) {
+        const h = headingEvidence(lines, i, "Algorithm|算法");
+        if (h) ids.add(h.id);
+      }
+      return { count: ids.size, ids: [...ids], method: "algorithm-heading-heuristic" };
+    }
+  }
+  function isMathExpression(text) {
+    const s = text.trim();
+    if (!s || s.length > 500 || !/[\p{L}\p{N}]/u.test(s)) return false;
+    if (/^(?:fig(?:ure)?\.?|table|algorithm|theorem|lemma|proposition|corollary|definition|eq(?:uation)?s?\.?|where|see|from|using|as|for|in|we|the|this|by|note|since|let|if|when|then|it|these|here|with|and|or)\b/i.test(s)) return false;
+    if (!/[=<>≤≥≠≈≡∝∈∉⊂⊆⊃⊇∑∏∫√∂∇→↦±×÷]/u.test(s)) return false;
+    const words = s.match(/\p{L}{3,}/gu) || [];
+    const prose = words.filter(w => !/^(?:sin|cos|tan|cot|sec|csc|sinh|cosh|tanh|exp|log|ln|max|min|arg|lim|sup|inf|det|diag|rank|tr|trace|subject|forall|exists)$/i.test(w));
+    return prose.length <= 2 && !/[!?]/.test(s);
+  }
+  class EquationDetector {
+    static detect(text) {
+      const idPattern = "(?:[A-Z](?:\\.\\d+|\\d+)(?:\\.\\d+)*|\\d+(?:\\.\\d+)*)(?:[a-z])?";
+      const trailing = new RegExp("^(.*?)\\(\\s*(" + idPattern + ")\\s*\\)[.,;]?\\s*$", "i");
+      const leading = new RegExp("^\\s*\\(\\s*(" + idPattern + ")\\s*\\)\\s*(.+)$", "i");
+      const ids = new Set();
+      // Never borrow math evidence across a page or bibliography boundary.
+      const pages = structuralLines(text.replace(/\f/g, "\nPAPERSTATS_PAGE_BOUNDARY\n")).join("\n").split("PAPERSTATS_PAGE_BOUNDARY");
+      for (const page of pages) {
+        const lines = page.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          let m = trailing.exec(line);
+          if (m) {
+            let evidence = isMathExpression(m[1]);
+            if (!m[1].trim()) {
+              // Extraction may put the right-margin number on its own line.
+              for (const direction of [-1, 1]) {
+                let joined = "";
+                for (let step = 1; step <= 2; step++) {
+                  const candidate = lines[i + direction * step];
+                  if (candidate === undefined || !candidate.trim()) break;
+                  if (/^\s*\(?[\d.]+\)?\s*$/.test(candidate)) break;
+                  if (!isMathExpression(candidate) && !/[=<>≤≥≠≈≡∈∑∏∫√∂∇+\-*^_(){}]/u.test(candidate)
+                    && !/^\s*[\p{L}\p{N}]\s*$/u.test(candidate)) break;
+                  joined = direction < 0 ? candidate + " " + joined : joined + " " + candidate;
+                  if (isMathExpression(joined)) { evidence = true; break; }
+                }
+              }
+            }
+            if (evidence) ids.add(normalizeStructuralID(m[2]));
+          }
+          else {
+            m = leading.exec(line);
+            if (m && isMathExpression(m[2])) ids.add(normalizeStructuralID(m[1]));
+          }
+        }
+      }
+      return { count: ids.size, ids: [...ids].sort((a, b) => a.localeCompare(b, "en", { numeric: true })),
+        method: "numbered-display-equation-heuristic", scope: "Numbered display equations only; inline and unnumbered math excluded" };
+    }
+  }
   class ReferencesDetector {
     static detect(text) {
       const lines = normalizeText(text).split(/[\n\f]/);
@@ -109,11 +219,18 @@
     const hasText = /\p{L}/u.test(text || "");
     const figures = hasText ? FigureDetector.detect(text, options.includeSupplementary !== false) : null;
     const tables = hasText ? TableDetector.detect(text, options.includeSupplementary !== false) : null;
+    const statements = hasText ? StatementDetector.detect(text) : null;
+    const algorithms = hasText ? AlgorithmDetector.detect(text) : null;
+    const equations = hasText || /[\d]+\s*[=<>≤≥≠]/u.test(text || "") ? EquationDetector.detect(text) : null;
     const references = options.references && hasText ? ReferencesDetector.detect(text) : { count: null, reason: "Disabled (experimental)" };
     return { words: hasText ? TextStatisticsService.count(text) : null,
       figures: figures?.count ?? null, tables: tables?.count ?? null, references: references.count,
+      statements: statements?.count ?? null, algorithms: algorithms?.count ?? null, equations: equations?.count ?? null,
+      statementIDs: statements?.ids || [], statementCounts: statements?.breakdown || null,
+      algorithmIDs: algorithms?.ids || [], equationIDs: equations?.ids || [],
+      equationScope: "Numbered display equations only; inline and unnumbered math excluded",
       figureIDs: figures?.ids || [], tableIDs: tables?.ids || [], referenceReason: references.reason,
-      detectionMethod: "caption-heuristic", noExtractableText: !hasText };
+      detectionMethod: "caption-heuristic", noExtractableText: !hasText && !equations };
   }
   function settingsKey(o) { return `${o.includeSupplementary !== false}:${!!o.references}`; }
   function cacheValid(c, a, stat, options) {
@@ -125,12 +242,14 @@
     const n = record?.[metric];
     if (!Number.isSafeInteger(n) || n < 0) return "";
     const approximate = metric !== "pages" && record.textCompleteness !== "complete";
-    const heuristic = ["figures", "tables", "references"].includes(metric);
+    const methods = { figures: "Caption heuristic", tables: "Caption heuristic", references: "Experimental bibliography",
+      statements: "Heading heuristic: Proposition + Theorem + Lemma + Corollary; Definition excluded",
+      algorithms: "Algorithm heading heuristic", equations: "Numbered display equations only; inline and unnumbered math excluded; heuristic" };
     const coverage = record.textCompleteness === "partial"
       ? `Partial text: ${record.indexedPages ?? "?"} / ${record.totalPages ?? "?"} pages extracted`
       : `Text coverage: ${record.textCompleteness}`;
     return String(n).padStart(16, "0") + "|" + (approximate ? "~" : "") + n.toLocaleString("en-US")
-      + "|" + coverage + (heuristic ? "; caption heuristic / experimental bibliography" : "");
+      + "|" + coverage + (methods[metric] ? "; " + methods[metric] : "");
   }
   async function selectPrimaryPDF(item, getItem) {
     if (item.isPDFAttachment?.()) return !item.deleted && await item.getFilePathAsync() ? item : null;
@@ -172,7 +291,7 @@
     async idle() { while (this.pending.size) await Promise.allSettled([...this.pending.values()]); }
   }
   const api = { ALGORITHM_VERSION, normalizeText, removeRepeatedMargins, TextStatisticsService,
-    FigureDetector, TableDetector, ReferencesDetector, analyze, settingsKey, cacheValid,
+    FigureDetector, TableDetector, StatementDetector, AlgorithmDetector, EquationDetector, ReferencesDetector, analyze, settingsKey, cacheValid,
     encodeColumn, selectPrimaryPDF, BackgroundQueue, normalizedID };
   root.PaperStatsCore = api;
   if (typeof module !== "undefined") module.exports = api;

@@ -1,12 +1,16 @@
 # Paper Statistics for Zotero
 
-Zotero 10 的本地 PDF 统计插件，使用官方 item-tree columns、ItemPaneManager、MenuManager 和 Notifier。安装文件位于 `dist/paper-statistics-0.1.0.xpi`。
+Zotero 10 的本地 PDF 统计插件，使用官方 item-tree columns、ItemPaneManager、MenuManager 和 Notifier。当前版本 **0.2.0**，安装文件位于 `dist/paper-statistics-0.2.0.xpi`。
+
+## 从 0.1.0 升级
+
+通过下面的“从文件安装”直接选择新版 XPI，可覆盖同 ID 的旧版，无需先卸载。新版新增 **Statements、Algorithms、Numbered Equations** 三列；安装后在列表表头勾选。旧统计缓存会因算法版本升级自动失效，在访问相应条目时后台重算，也可多选后右键“重新计算论文统计”。原版 XPI 与源码包仍保留在 dist 目录中。
 
 ## 安装与使用
 
 1. 在 Zotero 打开 **工具 → 插件（Plugins）**。
 2. 点击齿轮菜单，选择 **Install Add-on From File… / 从文件安装插件**，选择本项目的 XPI。
-3. 在文库列表表头右键，勾选 **PDF Pages、Words、Figures、Tables**。
+3. 在文库列表表头右键，勾选 **PDF Pages、Words、Figures、Tables、Statements、Algorithms、Numbered Equations**。
 4. 选中论文，在右侧展开 **论文统计 / Paper Statistics**；也可以右键单篇或多选条目，选择 **计算论文统计** 或 **重新计算论文统计**。
 5. 批次运行时，文库底部显示进度，点击即可取消；右键菜单及统计侧栏也可取消。
 
@@ -22,6 +26,9 @@ Zotero 10 的本地 PDF 统计插件，使用官方 item-tree columns、ItemPane
 | Words | PDF 提取文本中的词数，包含标题、图表说明和参考文献；不是出版社的正文专用字数 |
 | Figures | caption 启发式检测得到的唯一图编号；`3(a)` 与 `3(b)` 合并为 `3` |
 | Tables | caption 启发式检测得到的唯一表编号；`III` 与 `3` 合并 |
+| Statements | Proposition + Theorem + Lemma + Corollary 合计；不计 Definition，侧栏按四类列出数量和编号 |
+| Algorithms | 按 Algorithm 标题及唯一编号统计，Roman/Arabic 编号归一化 |
+| Numbered Equations | 带编号的独立公式；需要公式编号旁有数学表达式证据，不包含无编号或行内公式 |
 | References | 实验功能：独立 References/Bibliography 标题后的连续编号条目；不可靠时留空 |
 
 英文、Unicode 字母、H2O 等含字母数字词、缩写、连字符词和缩合词可以计数；纯数字与明显 URL/DOI 不计入词数。执行 Unicode NFKC 归一化、明显换行断词修复，并在至少三页中尝试去掉高度重复的页眉页脚。不是中文分词器，也不保证数学公式、双栏阅读顺序或 PDF 字体编码异常时的人工计数一致性。
@@ -29,6 +36,14 @@ Zotero 10 的本地 PDF 统计插件，使用官方 item-tree columns、ItemPane
 Words 等文字相关指标在提取覆盖不完整或未知时显示 `~`，鼠标悬停说明覆盖情况；侧栏显示例如 `Partial (100 / 184 pages extracted)`。`Complete` 仅表示所有页面已经过文字提取，**不表示 OCR 完整、图表检测准确或等同于出版社统计口径**。
 
 图表检测支持 Fig./Figure/FIG.、S1 等补充编号，以及 TABLE I/II/III。它会避开常见正文引用，并按编号去重，但仍可能漏掉被提取器拆散的 caption，或把段首引用误识为 caption。侧栏列出检测到的编号，便于核对。无 caption 的图像不计数；有可提取正文但未找到 caption 时，0 表示“检测到 0 个 caption”。
+
+**命题/定理类**：支持英文 Proposition、Theorem、Lemma、Corollary，以及中文命题、定理、引理、推论标题。Definition/定义、Assumption、Remark、Example、Proof 等不计入。编号条目按“类型 + 编号”去重，因此 Theorem 1 和 Lemma 1 各计一个；Theorem 1 重复提及不额外计数。支持 2.1、A.1 等编号，以及显式无编号标题（例如 `Theorem:` 或 `Lemma (Convergence).`）；无编号标题按出现位置计数。侧栏列出四类数量及检测标签。
+
+**算法**：按段首 Algorithm/算法 标题识别；同编号的重复标题合并，Algorithm I 与 Algorithm 1 归一为一个。显式无编号 Algorithm 标题也可识别；普通“algorithm”单词或 `Algorithm 9 is used...` 等正文引用不会作为新算法统计。
+
+**公式口径**：只统计文本中可识别的、带编号的独立公式，例如 `x = y + 1 (1)`、`f(x) ≤ 1 (A.1)`；编号被提取到紧邻的单独行时，会检查相邻数学表达式。重复编号只计一次，`(2a)` 和 `(2b)` 计两个。无编号公式、行内公式、图片中的公式不计入；单纯 `(1)` 引用、年份、列表标号不直接计数。因此 **Numbered Equations 不是论文中全部数学表达式的总数**。公式行被 PDF 提取器并入正文、符号丢失时可能漏计。
+
+这三项均为本地文本结构启发式检测；段首引用措辞、独立编号、复杂跨栏顺序可能造成误判。侧栏提供检测编号与计数范围，便于人工复核。识别不到的编号不会根据“最大编号”推算总量；参考文献段中的标题不计入，附录中的结构继续统计。
 
 References 只接受从 1 开始、至少三个、无间断无重复的 `[1]` 或 `1.` 条目；author-year、复杂跨栏重排和其他不确定情况返回未知。默认不运行，默认隐藏该列。
 

@@ -13,6 +13,14 @@ export interface CachedPaperStatistics extends TextStatistics {
   figures: number | null;
   tables: number | null;
   references: number | null;
+  statements: number | null;
+  algorithms: number | null;
+  equations: number | null;
+  statementIDs: string[];
+  statementCounts: { proposition: number; theorem: number; lemma: number; corollary: number } | null;
+  algorithmIDs: string[];
+  equationIDs: string[];
+  equationScope: string;
   figureIDs: string[];
   tableIDs: string[];
   fileMTime: number;

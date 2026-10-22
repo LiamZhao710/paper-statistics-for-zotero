@@ -1,5 +1,9 @@
 # 技术审计（2026-10-22，Europe/Berlin）
 
+## 0.2.0 增量
+
+新增 StatementDetector、AlgorithmDetector、EquationDetector，在已有本地文本 worker 中运行，未增加 Zotero API、第三方依赖、网络接口或数据库写入。沿用原有官方列与侧栏接口，增加三列及明细。Statements 合计 Proposition/Theorem/Lemma/Corollary，排除 Definition；Algorithms 按标题识别；Numbered Equations 仅覆盖带编号独立公式。算法版本从 1 升为 2，使旧统计记录自动失效。通过独立 profile 中的真实 PDF 与 DOM 验证；完整结果见当前 TEST-REPORT.md。
+
 ## 已确认
 
 - 原工作区只有文库维护脚本和报告，没有插件 scaffold、manifest、bootstrap 或 package.json。新项目独立放在 `paper-statistics/`，没有覆盖既有脚本。

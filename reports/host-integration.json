@@ -1,6 +1,6 @@
 {
   "host": "10.0.6",
-  "startedAt": "2026-10-22T19:46:09.873Z",
+  "startedAt": "2026-10-22T19:57:38.233Z",
   "checks": [
     {
       "name": "isolated data directory",
@@ -17,13 +17,16 @@
       "details": "jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/"
     },
     {
-      "name": "five official columns",
+      "name": "eight official columns",
       "passed": true,
       "details": [
         "paper-statistics\\@local\\.zotero-pages",
         "paper-statistics\\@local\\.zotero-words",
         "paper-statistics\\@local\\.zotero-figures",
         "paper-statistics\\@local\\.zotero-tables",
+        "paper-statistics\\@local\\.zotero-statements",
+        "paper-statistics\\@local\\.zotero-algorithms",
+        "paper-statistics\\@local\\.zotero-equations",
         "paper-statistics\\@local\\.zotero-references"
       ]
     },
@@ -44,14 +47,27 @@
       "name": "actual PDF pages, not journal range",
       "passed": true,
       "details": {
-        "attachmentID": 44,
-        "attachmentKey": "FHLDS8IK",
+        "attachmentID": 60,
+        "attachmentKey": "L5NXBJCB",
         "libraryID": 1,
         "pages": 3,
         "words": 43,
         "figures": 2,
         "tables": 2,
         "references": null,
+        "statements": 0,
+        "algorithms": 0,
+        "equations": 0,
+        "statementIDs": [],
+        "statementCounts": {
+          "proposition": 0,
+          "theorem": 0,
+          "lemma": 0,
+          "corollary": 0
+        },
+        "algorithmIDs": [],
+        "equationIDs": [],
+        "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
         "figureIDs": [
           "1",
           "2"
@@ -68,27 +84,40 @@
         "totalPages": 3,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792697179308,
+        "fileMTime": 1792698866559,
         "fileSize": 1496,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\FHLDS8IK\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\L5NXBJCB\\paper.pdf",
         "filename": "paper.pdf",
-        "algorithmVersion": 1,
+        "algorithmVersion": 2,
         "settingsKey": "true:false",
-        "calculatedAt": 1792698371220
+        "calculatedAt": 1792699060317
       }
     },
     {
       "name": "all-page worker extraction",
       "passed": true,
       "details": {
-        "attachmentID": 44,
-        "attachmentKey": "FHLDS8IK",
+        "attachmentID": 60,
+        "attachmentKey": "L5NXBJCB",
         "libraryID": 1,
         "pages": 3,
         "words": 43,
         "figures": 2,
         "tables": 2,
         "references": null,
+        "statements": 0,
+        "algorithms": 0,
+        "equations": 0,
+        "statementIDs": [],
+        "statementCounts": {
+          "proposition": 0,
+          "theorem": 0,
+          "lemma": 0,
+          "corollary": 0
+        },
+        "algorithmIDs": [],
+        "equationIDs": [],
+        "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
         "figureIDs": [
           "1",
           "2"
@@ -105,13 +134,13 @@
         "totalPages": 3,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792697179308,
+        "fileMTime": 1792698866559,
         "fileSize": 1496,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\FHLDS8IK\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\L5NXBJCB\\paper.pdf",
         "filename": "paper.pdf",
-        "algorithmVersion": 1,
+        "algorithmVersion": 2,
         "settingsKey": "true:false",
-        "calculatedAt": 1792698371220
+        "calculatedAt": 1792699060317
       }
     },
     {
@@ -165,17 +194,78 @@
       "passed": true
     },
     {
+      "name": "actual PDF statement count excludes definitions and references",
+      "passed": true,
+      "details": [
+        "proposition:1",
+        "theorem:1",
+        "lemma:2.1",
+        "corollary:A.1"
+      ]
+    },
+    {
+      "name": "actual PDF statement breakdown",
+      "passed": true,
+      "details": {
+        "proposition": 1,
+        "theorem": 1,
+        "lemma": 1,
+        "corollary": 1
+      }
+    },
+    {
+      "name": "actual PDF algorithm captions deduplicate Roman and Arabic",
+      "passed": true,
+      "details": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "name": "actual PDF numbered equations",
+      "passed": true,
+      "details": [
+        "1",
+        "2A",
+        "2B",
+        "A.1"
+      ]
+    },
+    {
+      "name": "live column provider statements",
+      "passed": true,
+      "details": "0000000000000004|4|Text coverage: complete; Heading heuristic: Proposition + Theorem + Lemma + Corollary; Definition excluded"
+    },
+    {
+      "name": "live column provider algorithms",
+      "passed": true,
+      "details": "0000000000000002|2|Text coverage: complete; Algorithm heading heuristic"
+    },
+    {
+      "name": "live column provider equations",
+      "passed": true,
+      "details": "0000000000000004|4|Text coverage: complete; Numbered display equations only; inline and unnumbered math excluded; heuristic"
+    },
+    {
       "name": "blank PDF pages, unknown words",
       "passed": true,
       "details": {
-        "attachmentID": 47,
-        "attachmentKey": "NR2XSH84",
+        "attachmentID": 65,
+        "attachmentKey": "ZXVYEGAJ",
         "libraryID": 1,
         "pages": 2,
         "words": null,
         "figures": null,
         "tables": null,
         "references": null,
+        "statements": null,
+        "algorithms": null,
+        "equations": null,
+        "statementIDs": [],
+        "statementCounts": null,
+        "algorithmIDs": [],
+        "equationIDs": [],
+        "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
         "figureIDs": [],
         "tableIDs": [],
         "referenceReason": "Disabled (experimental)",
@@ -186,27 +276,35 @@
         "totalPages": 2,
         "source": "zotero-pdf-worker",
         "warning": "No extractable text. OCR is not provided.",
-        "fileMTime": 1792697179312,
+        "fileMTime": 1792698866559,
         "fileSize": 828,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\NR2XSH84\\blank.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\ZXVYEGAJ\\blank.pdf",
         "filename": "blank.pdf",
-        "algorithmVersion": 1,
+        "algorithmVersion": 2,
         "settingsKey": "true:false",
-        "calculatedAt": 1792698372473
+        "calculatedAt": 1792699062376
       }
     },
     {
       "name": "corrupt PDF does not become zero",
       "passed": true,
       "details": {
-        "attachmentID": 49,
-        "attachmentKey": "V2QFSAH4",
+        "attachmentID": 67,
+        "attachmentKey": "VY4VTICU",
         "libraryID": 1,
         "pages": null,
         "words": null,
         "figures": null,
         "tables": null,
         "references": null,
+        "statements": null,
+        "algorithms": null,
+        "equations": null,
+        "statementIDs": [],
+        "statementCounts": null,
+        "algorithmIDs": [],
+        "equationIDs": [],
+        "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
         "figureIDs": [],
         "tableIDs": [],
         "referenceReason": "Disabled (experimental)",
@@ -217,13 +315,13 @@
         "totalPages": null,
         "source": "none",
         "warning": "InvalidPDFException: Worker action 'pdf.getFulltext' failed: {\"error\":\"{\\\"message\\\":\\\"Invalid PDF structure.\\\",\\\"name\\\":\\\"InvalidPDFException\\\"}\"} No extractable text. OCR is not provided.",
-        "fileMTime": 1792697179313,
+        "fileMTime": 1792698866567,
         "fileSize": 24,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\V2QFSAH4\\corrupt.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\VY4VTICU\\corrupt.pdf",
         "filename": "corrupt.pdf",
-        "algorithmVersion": 1,
+        "algorithmVersion": 2,
         "settingsKey": "true:false",
-        "calculatedAt": 1792698373474
+        "calculatedAt": 1792699063279
       }
     },
     {
@@ -238,14 +336,27 @@
       "name": "external replacement invalidates cache",
       "passed": true,
       "details": {
-        "attachmentID": 44,
-        "attachmentKey": "FHLDS8IK",
+        "attachmentID": 60,
+        "attachmentKey": "L5NXBJCB",
         "libraryID": 1,
         "pages": 1,
         "words": 5,
         "figures": 1,
         "tables": 0,
         "references": null,
+        "statements": 0,
+        "algorithms": 0,
+        "equations": 0,
+        "statementIDs": [],
+        "statementCounts": {
+          "proposition": 0,
+          "theorem": 0,
+          "lemma": 0,
+          "corollary": 0
+        },
+        "algorithmIDs": [],
+        "equationIDs": [],
+        "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
         "figureIDs": [
           "7"
         ],
@@ -258,13 +369,13 @@
         "totalPages": 1,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792697179313,
+        "fileMTime": 1792698866566,
         "fileSize": 640,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\FHLDS8IK\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\L5NXBJCB\\paper.pdf",
         "filename": "paper.pdf",
-        "algorithmVersion": 1,
+        "algorithmVersion": 2,
         "settingsKey": "true:false",
-        "calculatedAt": 1792698373985
+        "calculatedAt": 1792699063486
       }
     },
     {
@@ -272,19 +383,24 @@
       "passed": true,
       "details": {
         "text": [
-          "论文统计PDF Pages: 1Words: 5Figures: 1Tables: 0References: —Text coverage: completeAnalyzed PDF: paper.p",
-          "论文统计PDF Pages: 1Words: 5Figures: 1Tables: 0References: —Text coverage: completeAnalyzed PDF: paper.p",
+          "论文统计PDF Pages: 1Words: 5Figures: 1Tables: 0Statements: 0Algorithms: 0Numbered Equations: 0References",
+          "论文统计PDF Pages: 1Words: 5Figures: 1Tables: 0Statements: 0Algorithms: 0Numbered Equations: 0References",
           ""
         ],
         "pane": {
           "initialized": true,
           "hidden": false,
           "skipRender": false,
-          "itemID": 43,
+          "itemID": 59,
           "open": true,
           "html": "<item-pane-custom-section xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" data-sidenav-options=\"{&quot;l10nID&quot;:&quot;paperstats-section&quot;,&quot;icon&quot;:&quot;jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg&quot;}\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" style=\"--custom-section-icon-light: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg'); --custom-section-icon-dark: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg');\" tabType=\"library\"><collapsible-section custom=\"true\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" extra-buttons=\"\" class=\"\" style=\"--open-height: auto;\" open=\"\" data-l10n-id=\"paperstats-section\" data-l10n-args=\"undefined\" label=\"论文统计\" tooltiptext=\"本地 PDF 统计\"><div xmlns=\"http://www.w3.org/1999/xhtml\" role=\"button\" class=\"head\" tabindex=\"0\" aria-expanded=\"true\" aria-label=\"论文统计\"><div class=\"title-box\"><span class=\"title\">论文统计</span><span class=\"summary\"></span></div><popupset xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\"><menupopup><menuitem class=\"menuitem-iconic zotero-menuitem-pin\" data-l10n-id=\"pin-section\" label=\"固定此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-unpin\" data-l10n-id=\"unpin-section\" label=\"取消固定此栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-collapse-others\" data-l10n-id=\"collapse-other-sections\" label=\"折叠其他栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-expand-all\" data-l10n-id=\"expand-all-sections\" label=\"展开所有栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-up\" data-l10n-id=\"sidenav-reorder-up\" label=\"上移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-down\" data-l10n-id=\"sidenav-reorder-down\" label=\"下移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-reset\" data-l10n-id=\"sidenav-reorder-reset\" label=\"恢复栏顺序\"/></menupopup></popupset><toolbarbutton xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" class=\"twisty\" tabindex=\"0\" tooltip=\"dynamic-tooltip\" data-l10n-attrs=\"dynamic-tooltiptext\" data-l10n-args=\"{&quot;section&quot;:&quot;&quot;}\" data-l10n-id=\"section-button-collapse\" dynamic-tooltiptext=\"折叠此栏\" label=\"折叠  栏\"><image class=\"toolbarbutton-icon\" label=\"折叠  栏\"/><label class=\"toolbarbutton-text\" crop=\"end\" flex=\"1\" value=\"折叠  栏\"/></toolbarbutton></div><html:div xmlns:html=\"http://www.w3.org/1999/xhtml\" data-type=\"body\"><html:div style=\"padding: 8px; line-height: 1.6; overflow-wrap: anywhere;\"><html:div><html:strong>PDF Pages: </html:strong>1</html:div><html:div><html:strong>Words: </html:strong>5</html:div><html:div><html:strong>Figures: </html:strong>1</html:div><html:div><html:strong>Tables: </html:strong>0</html:div><html:div><html:stron"
         }
       }
+    },
+    {
+      "name": "new metrics and scope rendered in pane",
+      "passed": true,
+      "details": "论文统计PDF Pages: 3Words: 75Figures: 0Tables: 0Statements: 4Algorithms: 2Numbered Equations: 4References: —Text coverage: completeAnalyzed PDF: structures.pdfLast calculated: 2026/10/22 21:57:41Method: Words include captions and references; structural counts are text heuristics.Detected figures: —Detected tables: —Statement breakdown: Proposition 1; Theorem 1; Lemma 1; Corollary 1. Definitions excluded.Detected statements: proposition:1, theorem:1, lemma:2.1, corollary:A.1Detected algorithms: 1, 2Detected equations: 1, 2A, 2B, A.1Equation scope: Numbered display equations only; inline and unnumbered math excludedReferences: Disabled (experimental)Recompute Paper StatisticsInclude supplementary figures and tablesExperimental references (numbered styles only)"
     },
     {
       "name": "real document cell rendering",
@@ -317,20 +433,35 @@
       "name": "persistent cache reload",
       "passed": true,
       "details": {
-        "restored": 1792698373985,
-        "old": 1792698373985
+        "restored": 1792699063486,
+        "old": 1792699063486
       }
     }
   ],
+  "pluginVersion": "0.2.0",
+  "testedXpiSHA256": "893ad87d06882924fcbb21ea49bbd507c2ad30055bd023648b988d88a3394804",
   "sample": {
-    "attachmentID": 44,
-    "attachmentKey": "FHLDS8IK",
+    "attachmentID": 60,
+    "attachmentKey": "L5NXBJCB",
     "libraryID": 1,
     "pages": 3,
     "words": 43,
     "figures": 2,
     "tables": 2,
     "references": null,
+    "statements": 0,
+    "algorithms": 0,
+    "equations": 0,
+    "statementIDs": [],
+    "statementCounts": {
+      "proposition": 0,
+      "theorem": 0,
+      "lemma": 0,
+      "corollary": 0
+    },
+    "algorithmIDs": [],
+    "equationIDs": [],
+    "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
     "figureIDs": [
       "1",
       "2"
@@ -347,16 +478,69 @@
     "totalPages": 3,
     "source": "zotero-pdf-worker",
     "warning": null,
-    "fileMTime": 1792697179308,
+    "fileMTime": 1792698866559,
     "fileSize": 1496,
-    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\FHLDS8IK\\paper.pdf",
+    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\L5NXBJCB\\paper.pdf",
     "filename": "paper.pdf",
-    "algorithmVersion": 1,
+    "algorithmVersion": 2,
     "settingsKey": "true:false",
-    "calculatedAt": 1792698371220
+    "calculatedAt": 1792699060317
+  },
+  "structureSample": {
+    "attachmentID": 63,
+    "attachmentKey": "MCE9FFID",
+    "libraryID": 1,
+    "pages": 3,
+    "words": 75,
+    "figures": 0,
+    "tables": 0,
+    "references": null,
+    "statements": 4,
+    "algorithms": 2,
+    "equations": 4,
+    "statementIDs": [
+      "proposition:1",
+      "theorem:1",
+      "lemma:2.1",
+      "corollary:A.1"
+    ],
+    "statementCounts": {
+      "proposition": 1,
+      "theorem": 1,
+      "lemma": 1,
+      "corollary": 1
+    },
+    "algorithmIDs": [
+      "1",
+      "2"
+    ],
+    "equationIDs": [
+      "1",
+      "2A",
+      "2B",
+      "A.1"
+    ],
+    "equationScope": "Numbered display equations only; inline and unnumbered math excluded",
+    "figureIDs": [],
+    "tableIDs": [],
+    "referenceReason": "Disabled (experimental)",
+    "detectionMethod": "caption-heuristic",
+    "noExtractableText": false,
+    "textCompleteness": "complete",
+    "indexedPages": 3,
+    "totalPages": 3,
+    "source": "zotero-pdf-worker",
+    "warning": null,
+    "fileMTime": 1792698866567,
+    "fileSize": 1768,
+    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\MCE9FFID\\structures.pdf",
+    "filename": "structures.pdf",
+    "algorithmVersion": 2,
+    "settingsKey": "true:false",
+    "calculatedAt": 1792699061596
   },
   "paneDOMMatches": 3,
   "passed": true,
-  "finishedAt": "2026-10-22T19:46:18.778Z",
-  "xpiSHA256": "bd4ca0a14d8d8fbf3e18cfb5a88bd77375329bfba5da05a82853adc5576a4084"
+  "finishedAt": "2026-10-22T19:57:48.808Z",
+  "xpiSHA256": "893ad87d06882924fcbb21ea49bbd507c2ad30055bd023648b988d88a3394804"
 }

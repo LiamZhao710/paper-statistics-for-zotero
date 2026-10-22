@@ -1,24 +1,178 @@
-✔ word normalization, Unicode, scientific tokens, contractions and line-end hyphens (28.1407ms)
-✔ repeated margins are removed only at page edges (2.2511ms)
-✔ figures are caption-based, normalized and deduplicated (30.485ms)
-✔ tables normalize Roman/Arabic, support two-line IEEE labels and supplementary (1.578ms)
-✔ no text has unknown statistics instead of fake zero (0.537ms)
-✔ references default disabled and refuse author-year, gaps and duplicates (1.3584ms)
-✔ sort keys order numerically independent of partial marker or thousands separator (14.1761ms)
-✔ cache validity covers identity, mtime, size, algorithm and detector settings (0.5251ms)
-✔ primary PDF uses available best, then stored, then stable ID; never journal pages (0.9891ms)
-✔ queue defers work, bounds concurrency, deduplicates and cancels queued tasks (67.7778ms)
-✔ fresh complete cache is reused without parsing (10.6851ms)
-✔ partial index obtains complete text through all-page worker (4.3839ms)
-✔ worker failure preserves known partial coverage and its UI marker (31.6166ms)
-✔ stale cache and missing cache cannot resurrect old page metadata (5.0526ms)
-✔ force recompute bypasses even fresh complete fulltext cache (3.9204ms)
-✔ unknown extraction coverage never becomes a plain exact word count (3.5269ms)
-ℹ tests 16
-ℹ suites 0
-ℹ pass 16
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 313.6751
+TAP version 13
+# Subtest: word normalization, Unicode, scientific tokens, contractions and line-end hyphens
+ok 1 - word normalization, Unicode, scientific tokens, contractions and line-end hyphens
+  ---
+  duration_ms: 8.1362
+  type: 'test'
+  ...
+# Subtest: repeated margins are removed only at page edges
+ok 2 - repeated margins are removed only at page edges
+  ---
+  duration_ms: 1.7816
+  type: 'test'
+  ...
+# Subtest: figures are caption-based, normalized and deduplicated
+ok 3 - figures are caption-based, normalized and deduplicated
+  ---
+  duration_ms: 20.4191
+  type: 'test'
+  ...
+# Subtest: tables normalize Roman/Arabic, support two-line IEEE labels and supplementary
+ok 4 - tables normalize Roman/Arabic, support two-line IEEE labels and supplementary
+  ---
+  duration_ms: 1.9445
+  type: 'test'
+  ...
+# Subtest: no text has unknown statistics instead of fake zero
+ok 5 - no text has unknown statistics instead of fake zero
+  ---
+  duration_ms: 3.3875
+  type: 'test'
+  ...
+# Subtest: references default disabled and refuse author-year, gaps and duplicates
+ok 6 - references default disabled and refuse author-year, gaps and duplicates
+  ---
+  duration_ms: 2.8614
+  type: 'test'
+  ...
+# Subtest: sort keys order numerically independent of partial marker or thousands separator
+ok 7 - sort keys order numerically independent of partial marker or thousands separator
+  ---
+  duration_ms: 17.2647
+  type: 'test'
+  ...
+# Subtest: cache validity covers identity, mtime, size, algorithm and detector settings
+ok 8 - cache validity covers identity, mtime, size, algorithm and detector settings
+  ---
+  duration_ms: 0.4936
+  type: 'test'
+  ...
+# Subtest: primary PDF uses available best, then stored, then stable ID; never journal pages
+ok 9 - primary PDF uses available best, then stored, then stable ID; never journal pages
+  ---
+  duration_ms: 1.2044
+  type: 'test'
+  ...
+# Subtest: queue defers work, bounds concurrency, deduplicates and cancels queued tasks
+ok 10 - queue defers work, bounds concurrency, deduplicates and cancels queued tasks
+  ---
+  duration_ms: 75.2522
+  type: 'test'
+  ...
+# Subtest: fresh complete cache is reused without parsing
+ok 11 - fresh complete cache is reused without parsing
+  ---
+  duration_ms: 5.9733
+  type: 'test'
+  ...
+# Subtest: partial index obtains complete text through all-page worker
+ok 12 - partial index obtains complete text through all-page worker
+  ---
+  duration_ms: 2.2187
+  type: 'test'
+  ...
+# Subtest: worker failure preserves known partial coverage and its UI marker
+ok 13 - worker failure preserves known partial coverage and its UI marker
+  ---
+  duration_ms: 34.1519
+  type: 'test'
+  ...
+# Subtest: stale cache and missing cache cannot resurrect old page metadata
+ok 14 - stale cache and missing cache cannot resurrect old page metadata
+  ---
+  duration_ms: 3.9014
+  type: 'test'
+  ...
+# Subtest: force recompute bypasses even fresh complete fulltext cache
+ok 15 - force recompute bypasses even fresh complete fulltext cache
+  ---
+  duration_ms: 3.158
+  type: 'test'
+  ...
+# Subtest: unknown extraction coverage never becomes a plain exact word count
+ok 16 - unknown extraction coverage never becomes a plain exact word count
+  ---
+  duration_ms: 2.9107
+  type: 'test'
+  ...
+# Subtest: statement total includes four types, excludes definitions/proofs/remarks/assumptions
+ok 17 - statement total includes four types, excludes definitions/proofs/remarks/assumptions
+  ---
+  duration_ms: 5.8505
+  type: 'test'
+  ...
+# Subtest: statements deduplicate by type and ID, not global number, and skip prose mentions
+ok 18 - statements deduplicate by type and ID, not global number, and skip prose mentions
+  ---
+  duration_ms: 1.7858
+  type: 'test'
+  ...
+# Subtest: unnumbered and Chinese theorem-like headings are supported
+ok 19 - unnumbered and Chinese theorem-like headings are supported
+  ---
+  duration_ms: 1.6012
+  type: 'test'
+  ...
+# Subtest: structural headings skip bibliography and resume in appendix
+ok 20 - structural headings skip bibliography and resume in appendix
+  ---
+  duration_ms: 3.005
+  type: 'test'
+  ...
+# Subtest: algorithms deduplicate numbered captions and support Roman and separate-line titles
+ok 21 - algorithms deduplicate numbered captions and support Roman and separate-line titles
+  ---
+  duration_ms: 1.3417
+  type: 'test'
+  ...
+# Subtest: numbered display equations support sections, appendix labels and subequations
+ok 22 - numbered display equations support sections, appendix labels and subequations
+  ---
+  duration_ms: 17.1129
+  type: 'test'
+  ...
+# Subtest: equation number on separate line needs adjacent mathematical evidence
+ok 23 - equation number on separate line needs adjacent mathematical evidence
+  ---
+  duration_ms: 1.2286
+  type: 'test'
+  ...
+# Subtest: equation detector excludes prose references, years, captions, lists and unnumbered math
+ok 24 - equation detector excludes prose references, years, captions, lists and unnumbered math
+  ---
+  duration_ms: 0.4314
+  type: 'test'
+  ...
+# Subtest: equation evidence does not cross page or empty-paragraph boundaries
+ok 25 - equation evidence does not cross page or empty-paragraph boundaries
+  ---
+  duration_ms: 0.4587
+  type: 'test'
+  ...
+# Subtest: new metrics are null for unreadable PDFs and counted for pure numerical equations
+ok 26 - new metrics are null for unreadable PDFs and counted for pure numerical equations
+  ---
+  duration_ms: 3.3564
+  type: 'test'
+  ...
+# Subtest: new metrics retain numeric sorting and partial coverage indicators
+ok 27 - new metrics retain numeric sorting and partial coverage indicators
+  ---
+  duration_ms: 12.3831
+  type: 'test'
+  ...
+# Subtest: version 0.1 algorithm caches are invalidated for structural metrics
+ok 28 - version 0.1 algorithm caches are invalidated for structural metrics
+  ---
+  duration_ms: 0.381
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 293.873
