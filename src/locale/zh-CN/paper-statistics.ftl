@@ -1,0 +1,9 @@
+paperstats-section =
+    .label = 论文统计
+    .tooltiptext = 本地 PDF 统计
+paperstats-compute =
+    .label = 计算论文统计
+paperstats-recompute =
+    .label = 重新计算论文统计
+paperstats-cancel =
+    .label = 取消论文统计批次

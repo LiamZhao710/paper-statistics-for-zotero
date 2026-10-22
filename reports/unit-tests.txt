@@ -1,0 +1,24 @@
+✔ word normalization, Unicode, scientific tokens, contractions and line-end hyphens (28.1407ms)
+✔ repeated margins are removed only at page edges (2.2511ms)
+✔ figures are caption-based, normalized and deduplicated (30.485ms)
+✔ tables normalize Roman/Arabic, support two-line IEEE labels and supplementary (1.578ms)
+✔ no text has unknown statistics instead of fake zero (0.537ms)
+✔ references default disabled and refuse author-year, gaps and duplicates (1.3584ms)
+✔ sort keys order numerically independent of partial marker or thousands separator (14.1761ms)
+✔ cache validity covers identity, mtime, size, algorithm and detector settings (0.5251ms)
+✔ primary PDF uses available best, then stored, then stable ID; never journal pages (0.9891ms)
+✔ queue defers work, bounds concurrency, deduplicates and cancels queued tasks (67.7778ms)
+✔ fresh complete cache is reused without parsing (10.6851ms)
+✔ partial index obtains complete text through all-page worker (4.3839ms)
+✔ worker failure preserves known partial coverage and its UI marker (31.6166ms)
+✔ stale cache and missing cache cannot resurrect old page metadata (5.0526ms)
+✔ force recompute bypasses even fresh complete fulltext cache (3.9204ms)
+✔ unknown extraction coverage never becomes a plain exact word count (3.5269ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 313.6751

@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "Paper Statistics for Zotero",
+  "version": "0.1.0",
+  "description": "Local PDF pages, extracted words, caption-based figures and tables.",
+  "author": "Paper Statistics contributors",
+  "applications": {
+    "zotero": {
+      "id": "paper-statistics@local.zotero",
+      "update_url": "https://127.0.0.1:0/paper-statistics/no-updates.json",
+      "strict_min_version": "10.0",
+      "strict_max_version": "10.0.*"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+paperstats-section =
+    .label = Paper Statistics
+    .tooltiptext = Local PDF statistics
+paperstats-compute =
+    .label = Compute Paper Statistics
+paperstats-recompute =
+    .label = Recompute Paper Statistics
+paperstats-cancel =
+    .label = Cancel Paper Statistics Batch

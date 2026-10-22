@@ -1,0 +1,12 @@
+tests/host*/
+__pycache__/
+audit/*.js
+audit/*.mjs
+audit/*.json
+
+# Local credentials, real-library reports and generated source archives
+.env*
+*.local.txt
+reports/reference-recovery-audit.json
+dist/*-source.zip
+!audit/source-hashes.json
