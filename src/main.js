@@ -3,18 +3,61 @@ var PaperStatistics = (() => {
   "use strict";
   const C = PaperStatsCore;
   const PREF = "extensions.paperstatistics.";
-  const METRICS = { pages: "PDF Pages", words: "Words", figures: "Figures", tables: "Tables",
-    statements: "Statements", algorithms: "Algorithms", equations: "Numbered Equations", references: "References" };
+  const METRICS = C.METRICS;
+  const LABELS = { pages: "PDF 页数", words: "词数", figures: "图数", tables: "表数",
+    statements: "命题/定理类", algorithms: "算法数", equations: "编号公式数", references: "参考文献数" };
   let pluginID, rootURI, cachePath, worker, queue, observer, timer, saveTimer, refreshTimer;
   let alive = false, serial = 0, cache = {}, batch = null, diskWrites = Promise.resolve();
   const rows = new Map(), tracked = new Set(), epochs = new Map(), replies = new Map();
   const columns = [], menus = [], paneHooks = new Map(), dirtyRows = new Set(), prefObservers = [];
+  const columnMetrics = new Map();
+  let preferencePaneID;
   const windows = new Set();
   const log = e => Zotero.logError(e);
   const options = () => ({
     includeSupplementary: Zotero.Prefs.get(PREF + "includeSupplementary", true) !== false,
-    references: !!Zotero.Prefs.get(PREF + "references", true)
+    references: true,
+    authorYearReferences: Zotero.Prefs.get(PREF + "authorYearReferences", true) !== false
   });
+  function visibleMetrics() {
+    return Object.keys(METRICS).filter(metric => {
+      const value = Zotero.Prefs.get(PREF + "show." + metric, true);
+      return value === undefined ? C.DEFAULT_METRICS.includes(metric) : !!value;
+    });
+  }
+  function setVisibleMetrics(metrics) {
+    if (!Array.isArray(metrics) || metrics.some(m => !Object.hasOwn(METRICS, m))) throw new Error("Unknown statistic selection");
+    const selected = new Set(metrics);
+    for (const metric of Object.keys(METRICS)) Zotero.Prefs.set(PREF + "show." + metric, selected.has(metric), true);
+  }
+  function registerSelectedColumns() {
+    const selected = new Set(visibleMetrics());
+    for (const [metric, key] of columnMetrics) {
+      if (selected.has(metric)) continue;
+      Zotero.ItemTreeManager.unregisterColumn(key);
+      columnMetrics.delete(metric); columns.splice(columns.indexOf(key), 1);
+    }
+    for (const metric of selected) {
+      if (columnMetrics.has(metric)) continue;
+      // A fresh namespace avoids legacy hidden-column preferences on upgrade.
+      // Visibility is owned by our checkboxes; unselected columns are unregistered.
+      const key = Zotero.ItemTreeManager.registerColumn({
+        pluginID, dataKey: "selected-" + metric, label: METRICS[metric], hidden: false,
+        showInColumnPicker: false, width: metric === "equations" ? "140" : "90",
+        zoteroPersist: ["width", "sortDirection"],
+        dataProvider: item => dataProvider(item, metric),
+        renderCell: (index, data, column, isFirstColumn, doc) => {
+          const span = doc.createElement("span"); span.className = "cell " + column.className;
+          const [, display, tooltip] = String(data || "").split("|");
+          span.textContent = display || ""; span.title = tooltip || "Pending or unavailable";
+          span.style.fontVariantNumeric = "tabular-nums"; return span;
+        }
+      });
+      if (!key) throw new Error("Column registration failed: " + metric);
+      columnMetrics.set(metric, key); columns.push(key);
+    }
+    for (const hook of paneHooks.values()) hook.refresh();
+  }
   const identity = a => `${a.libraryID}/${a.key}`;
   const cancelled = token => !alive || token?.cancelled;
 
@@ -165,48 +208,72 @@ var PaperStatistics = (() => {
   }
 
   function renderPane({ body, item, doc }) {
+    const opened = new Set([...body.querySelectorAll("details[open]")].map(d => d.dataset.paperstatsDetails));
     body.replaceChildren();
     if (!item) return;
     const state = rows.get(item.id);
     const r = state?.result;
     const container = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     container.style.cssText = "padding:8px;line-height:1.6;overflow-wrap:anywhere";
-    const append = (label, value) => {
+    let target = container;
+    const append = (label, value, metric) => {
       const line = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
       const strong = doc.createElementNS("http://www.w3.org/1999/xhtml", "strong");
-      strong.textContent = label + ": "; line.append(strong, doc.createTextNode(String(value))); container.append(line);
+      strong.textContent = label + ": "; line.append(strong, doc.createTextNode(String(value))); target.append(line);
+      if (metric) line.dataset.statistic = metric;
+      return line;
     };
-    if (r) {
-      for (const [metric, label] of Object.entries(METRICS)) {
-        append(label, C.encodeColumn(r, metric).split("|")[1] || "—");
+    const details = (id, title) => {
+      const element = doc.createElementNS("http://www.w3.org/1999/xhtml", "details");
+      element.dataset.paperstatsDetails = id; element.open = opened.has(id);
+      const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary"); summary.textContent = title;
+      element.append(summary);container.append(element);return element;
+    };
+    const selected = visibleMetrics();
+    if (r && selected.length) {
+      for (const metric of selected) {
+        const line = append(METRICS[metric], C.encodeColumn(r, metric).split("|")[1] || "—", metric);
+        if (metric === "references") line.title = r.referenceReason || "Reference count unavailable";
       }
+      target = details("evidence", "检测明细与统计口径");
       append("Text coverage", r.textCompleteness === "partial"
         ? `Partial (${r.indexedPages} / ${r.totalPages} pages extracted)` : r.textCompleteness);
       append("Analyzed PDF", r.filename);
       append("Last calculated", new Date(r.calculatedAt).toLocaleString());
       append("Method", "Words include captions and references; structural counts are text heuristics.");
-      append("Detected figures", r.figureIDs.join(", ") || "—");
-      append("Detected tables", r.tableIDs.join(", ") || "—");
-      if (r.statementCounts) append("Statement breakdown", `Proposition ${r.statementCounts.proposition}; Theorem ${r.statementCounts.theorem}; Lemma ${r.statementCounts.lemma}; Corollary ${r.statementCounts.corollary}. Definitions excluded.`);
-      append("Detected statements", (r.statementIDs || []).join(", ") || "—");
-      append("Detected algorithms", (r.algorithmIDs || []).join(", ") || "—");
-      append("Detected equations", (r.equationIDs || []).join(", ") || "—");
-      append("Equation scope", r.equationScope || "Numbered display equations only");
-      append("References", r.referenceReason);
+      if (selected.includes("figures")) append("Detected figures", r.figureIDs.join(", ") || "—");
+      if (selected.includes("tables")) append("Detected tables", r.tableIDs.join(", ") || "—");
+      if (selected.includes("statements")) {
+        if (r.statementCounts) append("Statement breakdown", `Proposition ${r.statementCounts.proposition}; Theorem ${r.statementCounts.theorem}; Lemma ${r.statementCounts.lemma}; Corollary ${r.statementCounts.corollary}. Definitions excluded.`);
+        append("Detected statements", (r.statementIDs || []).join(", ") || "—");
+      }
+      if (selected.includes("algorithms")) append("Detected algorithms", (r.algorithmIDs || []).join(", ") || "—");
+      if (selected.includes("equations")) {
+        append("Detected equations", (r.equationIDs || []).join(", ") || "—");
+        append("Equation scope", r.equationScope || "Numbered display equations only");
+      }
+      if (selected.includes("references")) {
+        append("Reference method", `${r.referenceStyle || "unknown"}; ${r.referenceReason}`);
+        append("Detected references", (r.referenceIDs || []).join(", ") || "—");
+      }
       if (r.warning) append("Note", r.warning);
+      target = container;
     }
-    else append("Status", state?.status === "no-pdf" ? "No locally available PDF" : state?.status === "error" ? state.error : "Pending…");
+    else append("Status", !selected.length ? "未选择统计项目，请展开显示设置勾选。" : state?.status === "no-pdf" ? "No locally available PDF" : state?.status === "error" ? state.error : "Pending…");
     const button = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
     button.textContent = "Recompute Paper Statistics";
     button.addEventListener("click", () => void startBatch([item], true)); container.append(button);
-    for (const [pref, label] of [["includeSupplementary", "Include supplementary figures and tables"], ["references", "Experimental references (numbered styles only)"]]) {
+    const settings = details("settings", "显示设置（只显示勾选项）");
+    for (const metric of Object.keys(METRICS)) {
       const line = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");
       line.style.display = "block";
       const checkbox = doc.createElementNS("http://www.w3.org/1999/xhtml", "input"); checkbox.type = "checkbox";
-      checkbox.checked = !!options()[pref === "references" ? "references" : "includeSupplementary"];
-      checkbox.addEventListener("change", () => Zotero.Prefs.set(PREF + pref, checkbox.checked, true));
-      line.append(checkbox, doc.createTextNode(label)); container.append(line);
+      checkbox.dataset.metric = metric;checkbox.checked = selected.includes(metric);
+      checkbox.addEventListener("change", () => Zotero.Prefs.set(PREF + "show." + metric, checkbox.checked, true));
+      line.append(checkbox, doc.createTextNode(`${LABELS[metric]} / ${METRICS[metric]}`)); settings.append(line);
     }
+    const more = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");more.textContent = "打开完整设置";
+    more.onclick = () => Zotero.Utilities.Internal.openPreferences(preferencePaneID);settings.append(more);
     if (batch) {
       append("Batch", `${batch.done} / ${batch.total}, unavailable/errors ${batch.failed}${batch.cancelled ? " (cancelling)" : ""}`);
       const cancel = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
@@ -315,23 +382,9 @@ var PaperStatistics = (() => {
       for (const req of replies.values()) req.reject(new Error(e.message || "Statistics worker failed"));
       replies.clear();
     };
-    for (const [metric, label] of Object.entries(METRICS)) {
-      // No numeric comparator exists in this API. Sort uses fixed-width decimal keys;
-      // renderCell independently displays the human-readable value and partial marker.
-      const key = Zotero.ItemTreeManager.registerColumn({
-        pluginID, dataKey: metric, label, hidden: metric === "references", width: "90",
-        zoteroPersist: ["width", "hidden", "sortDirection"],
-        dataProvider: item => dataProvider(item, metric),
-        renderCell: (index, data, column, isFirstColumn, doc) => {
-          const span = doc.createElement("span"); span.className = "cell " + column.className;
-          const [, display, tooltip] = String(data || "").split("|");
-          span.textContent = display || ""; span.title = tooltip || "Pending or unavailable";
-          span.style.fontVariantNumeric = "tabular-nums"; return span;
-        }
-      });
-      if (!key) throw new Error("Column registration failed: " + metric);
-      columns.push(key);
-    }
+    registerSelectedColumns();
+    preferencePaneID = await Zotero.PreferencePanes.register({ pluginID, id: "paperstats-preferences",
+      label: "Paper Statistics / 论文统计", src: rootURI + "preferences.xhtml", image: rootURI + "icon.svg" });
     const section = Zotero.ItemPaneManager.registerSection({
       paneID: "paperstats", pluginID,
       header: { l10nID: "paperstats-section", icon: rootURI + "icon.svg" },
@@ -354,12 +407,17 @@ var PaperStatistics = (() => {
           onShowing: (_, context) => context.setVisible(context.items?.some(i => i.isRegularItem() || i.isPDFAttachment())),
           onCommand: (_, context) => void startBatch(context.items || [], force)
         })),
-        { menuType: "menuitem", l10nID: "paperstats-cancel", onShowing: (_, context) => context.setVisible(!!batch), onCommand: cancelBatch }
+        { menuType: "menuitem", l10nID: "paperstats-cancel", onShowing: (_, context) => context.setVisible(!!batch), onCommand: cancelBatch },
+        { menuType: "menuitem", l10nID: "paperstats-settings", onCommand: () => Zotero.Utilities.Internal.openPreferences(preferencePaneID) }
       ]
     });
     if (!menu) throw new Error("Menu registration failed"); menus.push(menu);
+    const settingsMenu = Zotero.MenuManager.registerMenu({ menuID: "paperstats-settings", pluginID, target: "main/menubar/tools",
+      menus: [{ menuType: "menuitem", l10nID: "paperstats-settings", onCommand: () => Zotero.Utilities.Internal.openPreferences(preferencePaneID) }] });
+    if (settingsMenu) menus.push(settingsMenu);
     observer = Zotero.Notifier.registerObserver({ notify }, ["item"], "paper-statistics");
-    for (const pref of ["includeSupplementary", "references"]) {
+    for (const metric of Object.keys(METRICS)) prefObservers.push(Zotero.Prefs.registerObserver(PREF + "show." + metric, registerSelectedColumns, true));
+    for (const pref of ["includeSupplementary", "authorYearReferences"]) {
       prefObservers.push(Zotero.Prefs.registerObserver(PREF + pref, () => {
         const ids = [...tracked]; invalidate(ids);
         for (const id of ids) { const item = Zotero.Items.get(id); if (item && !item.deleted) void request(item); }
@@ -393,12 +451,14 @@ var PaperStatistics = (() => {
       for (const key of columns.splice(0)) Zotero.ItemTreeManager.unregisterColumn(key);
       if (api.sectionID) Zotero.ItemPaneManager.unregisterSection(api.sectionID);
       for (const id of menus.splice(0)) Zotero.MenuManager.unregisterMenu(id);
+      if (preferencePaneID) Zotero.PreferencePanes.unregister(preferencePaneID);
     }
     for (const win of [...windows]) unloadWindow(win);
-    paneHooks.clear(); rows.clear(); tracked.clear();
+    paneHooks.clear(); rows.clear(); tracked.clear();columnMetrics.clear();
     if (Zotero.PaperStatistics === api) delete Zotero.PaperStatistics;
   }
   const api = { start, stop, loadWindow, unloadWindow, request, startBatch, cancelBatch,
+    visibleMetrics, setVisibleMetrics, get preferencePaneID() { return preferencePaneID; },
     dataProvider, TextStatisticsService, PdfStatisticsService, getRow: id => rows.get(id),
     whenIdle: () => queue.idle(), get columnIDs() { return [...columns]; }, sectionID: null };
   return api;

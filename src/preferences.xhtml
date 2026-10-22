@@ -1,0 +1,26 @@
+<vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml">
+  <html:section class="main-section" style="max-width:700px;line-height:1.7">
+    <html:h2>显示统计项目</html:h2>
+    <html:p>只在文库列表和论文统计侧栏显示勾选项，修改立即生效并自动保存。此处仅管理本插件的统计；Zotero 自带的作者、年份等列仍由表头菜单管理。</html:p>
+    <html:div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.pages"/> PDF 页数 / PDF Pages</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.words"/> 词数 / Words</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.figures"/> 图数 / Figures</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.tables"/> 表数 / Tables</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.statements"/> 命题/定理类 / Statements</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.algorithms"/> 算法数 / Algorithms</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.equations"/> 编号公式数 / Numbered Equations</html:label>
+      <html:label><html:input type="checkbox" preference="extensions.paperstatistics.show.references"/> 参考文献数 / References</html:label>
+    </html:div>
+    <hbox style="margin-top:12px">
+      <button label="常用三项" oncommand="Zotero.PaperStatistics.setVisibleMetrics(['pages','words','references'])"/>
+      <button label="全选" oncommand="Zotero.PaperStatistics.setVisibleMetrics(['pages','words','figures','tables','statements','algorithms','equations','references'])"/>
+      <button label="全部隐藏" oncommand="Zotero.PaperStatistics.setVisibleMetrics([])"/>
+    </hbox>
+    <html:h2>统计选项</html:h2>
+    <html:label style="display:block"><html:input type="checkbox" preference="extensions.paperstatistics.includeSupplementary"/> 图表统计包含补充材料编号</html:label>
+    <html:label style="display:block"><html:input type="checkbox" preference="extensions.paperstatistics.authorYearReferences"/> 允许估计作者—年份制参考文献数（显示 ~）</html:label>
+    <html:p>参考文献统计默认启用。编号制按可识别条目去重；作者—年份制为估计值。缺少参考文献标题、编号不连续或内容无法可靠识别时显示 —，不会用最大编号冒充总数。展开侧栏“检测明细与统计口径”可查看检测方式和原因。</html:p>
+    <html:p>切换显示项目只改变界面，不触发 PDF 重新解析。改变统计选项会在后台更新相关缓存。公式仍只统计带编号的独立公式；命题/定理类不包括定义。</html:p>
+  </html:section>
+</vbox>

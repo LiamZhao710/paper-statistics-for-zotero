@@ -1,0 +1,16 @@
+{
+  "model": "deepseek-flash",
+  "usage": {
+    "prompt_tokens": 954,
+    "completion_tokens": 1155,
+    "total_tokens": 2109,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 954
+  },
+  "purpose": "README drafting from non-sensitive feature specification only",
+  "finish_reason": "stop",
+  "reviewed": true
+}

@@ -1,5 +1,15 @@
 # 技术审计（2026-10-22，Europe/Berlin）
 
+## 0.3.0 增量（2026-10-23）
+
+参考文献统计默认启用，支持方括号/圆括号/句点/右括号编号制和带估计标记的作者—年份制。算法版本升为 3，旧缓存自动失效；作者—年份估计可禁用。新增参考文献 style/confidence/IDs/reason 字段，未使用网络元数据或 LLM 处理用户文献。
+
+显示设置统一管理八个插件统计项，默认 PDF Pages、Words、References。仅注册勾选项的官方 custom columns，取消项立即 unregister；新注册键使用 selected- 前缀，避免旧版 hidden 持久偏好干扰升级。showInColumnPicker=false 把控制集中到本插件的勾选框，避免继续挤占宿主的属性菜单。主侧栏只显示选中数值，明细与设置分别放在折叠 details 中。
+
+直接核对本机 `xpcom/preferencePanes.js` 的 register/unregister 与 `preferences/preferences.js` 的 preference 属性绑定流程，使用官方 PreferencePanes 注册设置页；核对 `Utilities.Internal.openPreferences(paneID)` 的窗口返回值，用于工具菜单入口与独立 profile 中的真实 UI 测试。没有修改宿主 column prefs 文件、使用私有 schema，或 monkey patch item tree。
+
+使用说明初稿按用户全局偏好交给已配置的 DeepSeek Flash API，主助手复核；仅发送非敏感功能规范，密钥未复制到项目，未发送用户 PDF 或文库。该开发辅助不进入插件运行时或依赖；调用元数据见 reports/deepseek-documentation.json。
+
 ## 0.2.0 增量
 
 新增 StatementDetector、AlgorithmDetector、EquationDetector，在已有本地文本 worker 中运行，未增加 Zotero API、第三方依赖、网络接口或数据库写入。沿用原有官方列与侧栏接口，增加三列及明细。Statements 合计 Proposition/Theorem/Lemma/Corollary，排除 Definition；Algorithms 按标题识别；Numbered Equations 仅覆盖带编号独立公式。算法版本从 1 升为 2，使旧统计记录自动失效。通过独立 profile 中的真实 PDF 与 DOM 验证；完整结果见当前 TEST-REPORT.md。

@@ -7,3 +7,5 @@ paperstats-recompute =
     .label = Recompute Paper Statistics
 paperstats-cancel =
     .label = Cancel Paper Statistics Batch
+paperstats-settings =
+    .label = Paper Statistics Display Settings…

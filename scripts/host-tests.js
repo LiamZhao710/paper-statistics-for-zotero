@@ -38,7 +38,11 @@ async function run() {
     const hash=Cc['@mozilla.org/security/hash;1'].createInstance(Ci.nsICryptoHash);
     hash.init(hash.SHA256);hash.update(installedBytes,installedBytes.length);
     report.testedXpiSHA256=[...hash.finish(false)].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
-    check('eight official columns',api.columnIDs.length===8,api.columnIDs);
+    api.setVisibleMetrics(['pages','words','references']);await sleep(300);
+    check('compact default selection',api.columnIDs.length===3 && api.visibleMetrics().join(',')==='pages,words,references',api.columnIDs);
+    check('official display preference pane',!!api.preferencePaneID && Zotero.PreferencePanes.pluginPanes.some(p=>p.id===api.preferencePaneID),api.preferencePaneID);
+    api.setVisibleMetrics(['pages','words','figures','tables','statements','algorithms','equations','references']);await sleep(300);
+    check('all eight metrics can be selected',api.columnIDs.length===8,api.columnIDs);
     check('official pane section',!!api.sectionID,api.sectionID);
     const parent=async title=>{
       const item=new Zotero.Item('journalArticle'); item.libraryID=Zotero.Libraries.userLibraryID;
@@ -58,7 +62,7 @@ async function run() {
     check('all-page worker extraction',r?.textCompleteness==='complete' && r.indexedPages===3,r);
     check('actual PDF captions',r?.figures===2 && r.tables===2,{figures:r?.figureIDs,tables:r?.tableIDs});
     check('actual PDF word count',r?.words===43,r?.words);
-    check('references disabled by default',r?.references===null,r?.references);
+    check('numbered PDF references enabled',r?.references===3 && r.referenceConfidence==='high',{count:r?.references,style:r?.referenceStyle});
     const after=await Zotero.FullText.getPages(a.id);
     check('extraction did not rewrite fulltext index',after.indexedPages===1,{indexedPages:after.indexedPages,total:after.total});
     // Use the host collation, exactly as ItemTree's comparator does.
@@ -78,6 +82,10 @@ async function run() {
     check('actual PDF algorithm captions deduplicate Roman and Arabic',sr?.algorithms===2,sr?.algorithmIDs);
     check('actual PDF numbered equations',sr?.equations===4,sr?.equationIDs);
     for(const metric of ['statements','algorithms','equations'])check('live column provider '+metric,!!api.dataProvider(mathPaper,metric),api.dataProvider(mathPaper,metric));
+    const authorPaper=await parent('Paper Statistics author-year bibliography');await attach(authorPaper,'author-year.pdf');
+    const ar=await api.request(authorPaper,true);report.authorYearSample=ar;
+    check('actual PDF author-year references estimated',ar?.references===3 && ar.referenceConfidence==='estimated',ar);
+    check('author-year column marks estimate despite complete extraction',api.dataProvider(authorPaper,'references').includes('|~3|'),api.dataProvider(authorPaper,'references'));
     const blank=await parent('Blank PDF');await attach(blank,'blank.pdf');const br=await api.request(blank,true);
     check('blank PDF pages, unknown words',br?.pages===2 && br.words===null && br.figures===null,br);
     const bad=await parent('Corrupt PDF');await attach(bad,'corrupt.pdf');const badResult=await api.request(bad,true);
@@ -105,6 +113,33 @@ async function run() {
     const mathPane=[...win.document.querySelectorAll('item-pane-custom-section')].find(el=>el.dataset.pane===api.sectionID);
     if(mathPane){mathPane.open=true;mathPane.scrollIntoView({block:'center'});}await sleep(500);
     check('new metrics and scope rendered in pane',mathPane?.textContent.includes('Statements: 4') && mathPane.textContent.includes('Algorithms: 2') && mathPane.textContent.includes('Numbered Equations: 4') && mathPane.textContent.includes('Definitions excluded.'),mathPane?.textContent.slice(0,1800));
+    const beforeDisplay=sr.calculatedAt;
+    api.setVisibleMetrics(['references']);await sleep(500);
+    check('unchecked columns unregistered',api.columnIDs.length===1 && Zotero.ItemTreeManager.getCustomColumns('main').filter(c=>c.pluginID==='paper-statistics@local.zotero').length===1,api.columnIDs);
+    check('pane shows only selected metric',[...mathPane.querySelectorAll('[data-statistic]')].map(el=>el.dataset.statistic).join(',')==='references');
+    check('details start collapsed',!mathPane.querySelector('details[data-paperstats-details="evidence"]')?.open);
+    const displaySettings=mathPane.querySelector('details[data-paperstats-details="settings"]');displaySettings.open=true;
+    const pagesCheckbox=displaySettings.querySelector('input[data-metric="pages"]');pagesCheckbox.checked=true;
+    pagesCheckbox.dispatchEvent(new win.Event('change',{bubbles:true}));await sleep(500);
+    check('pane checkbox updates columns and persists preference',api.columnIDs.length===2 && Zotero.Prefs.get('extensions.paperstatistics.show.pages',true)===true);
+    check('checkbox group remains open',!!mathPane.querySelector('details[data-paperstats-details="settings"]')?.open);
+    check('display changes do not reparse PDF',api.getRow(mathPaper.id).result.calculatedAt===beforeDisplay);
+    api.setVisibleMetrics([]);await sleep(400);
+    check('hide all removes all plugin columns',api.columnIDs.length===0);
+    check('hide all retains accessible settings',mathPane.querySelectorAll('[data-statistic]').length===0 && mathPane.querySelectorAll('input[data-metric]').length===8);
+    api.setVisibleMetrics(['pages','words','references']);await sleep(300);
+    // Open the actual preferences UI and exercise Zotero's preference binding.
+    const prefWindow=Zotero.Utilities.Internal.openPreferences(api.preferencePaneID);
+    for(let i=0;i<80 && !prefWindow.document.querySelector('[preference="extensions.paperstatistics.show.figures"]');i++)await sleep(100);
+    const figuresPreference=prefWindow.document.querySelector('[preference="extensions.paperstatistics.show.figures"]');
+    check('actual settings panel rendered eight checkboxes',prefWindow.document.querySelectorAll('[preference^="extensions.paperstatistics.show."]').length===8);
+    figuresPreference.checked=true;figuresPreference.dispatchEvent(new prefWindow.Event('change',{bubbles:true}));await sleep(400);
+    check('preferences checkbox controls visible metrics',api.visibleMetrics().includes('figures') && api.columnIDs.length===4);
+    figuresPreference.checked=false;figuresPreference.dispatchEvent(new prefWindow.Event('change',{bubbles:true}));await sleep(300);prefWindow.close();
+    await win.ZoteroPane.selectItem(authorPaper.id);await sleep(600);
+    const authorPane=[...win.document.querySelectorAll('item-pane-custom-section')].find(el=>el.dataset.pane===api.sectionID);
+    if(authorPane){authorPane.open=true;authorPane.scrollIntoView({block:'center'});}await sleep(300);
+    check('author-year estimated reference count visible in pane',authorPane?.querySelector('[data-statistic="references"]')?.textContent.includes('~3'));
     const column=Zotero.ItemTreeManager.getCustomColumns('main').find(c=>c.dataKey===key);
     const cell=column.renderCell(0,api.dataProvider(paper,'words'),{className:'test'},false,win.document);
     check('real document cell rendering',!!cell.textContent && !cell.textContent.startsWith('0000'),cell.textContent);
@@ -120,6 +155,7 @@ async function run() {
     await addon.enable();
     for(let i=0;i<40 && !Zotero.PaperStatistics;i++)await sleep(100);
     check('enable restored plugin',!!Zotero.PaperStatistics);
+    check('display selection survives plugin restart',Zotero.PaperStatistics.visibleMetrics().join(',')==='pages,words,references' && Zotero.PaperStatistics.columnIDs.length===3,Zotero.PaperStatistics.visibleMetrics());
     const restored=await Zotero.PaperStatistics.request(paper);
     check('persistent cache reload',restored?.calculatedAt===replaced.calculatedAt,{restored:restored?.calculatedAt,old:replaced.calculatedAt});
     // Let manager-generated row/column refreshes finish before closing the host.

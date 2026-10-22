@@ -41,4 +41,8 @@ if __name__ == '__main__':
          'Algorithm II: Second solver','Algorithm 9 is used in our experiments.'],
         ['Equations','x = y + 1     (1)','z = 2*x     (2a)','z = 3*x     (2b)',
          'f(x) <= 1     (A.1)','See Eq. (99) for the discussion.']]))
+    (root/'author-year.pdf').write_bytes(pdf([['Bibliography',
+        'Smith, J. (2020). First research article.',
+        'Wang, X., 2021. Second research article.',
+        'Jones, M. (2022a). Third research article.']]))
     print(root)

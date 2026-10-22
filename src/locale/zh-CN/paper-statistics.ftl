@@ -7,3 +7,5 @@ paperstats-recompute =
     .label = 重新计算论文统计
 paperstats-cancel =
     .label = 取消论文统计批次
+paperstats-settings =
+    .label = Paper Statistics 显示设置…

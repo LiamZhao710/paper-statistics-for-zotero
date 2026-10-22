@@ -31,7 +31,7 @@ test('no text has unknown statistics instead of fake zero', () => {
   assert.equal(C.analyze('1234').figures, null);
   assert.equal(C.analyze('There are no captions.').figures, 0);
 });
-test('references default disabled and refuse author-year, gaps and duplicates', () => {
+test('pure analysis API allows explicit reference enablement and rejects weak evidence', () => {
   const numbered = 'REFERENCES\n[1] Smith 2020\n[2] Wang 2021\n[3] Jones 2022\nAppendix A\n[4] Not a reference';
   assert.equal(C.analyze(numbered).references, null);
   assert.equal(C.analyze(numbered, {references:true}).references, 3);

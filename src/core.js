@@ -1,7 +1,10 @@
 /* Pure algorithms shared by the background worker and Node tests. */
 (function (root) {
   "use strict";
-  const ALGORITHM_VERSION = 2;
+  const ALGORITHM_VERSION = 3;
+  const METRICS = { pages: "PDF Pages", words: "Words", figures: "Figures", tables: "Tables",
+    statements: "Statements", algorithms: "Algorithms", equations: "Numbered Equations", references: "References" };
+  const DEFAULT_METRICS = ["pages", "words", "references"];
   const tokenRE = /[\p{L}\p{N}]+(?:['’\-‐‑][\p{L}\p{N}]+)*/gu;
 
   function normalizeText(text) {
@@ -197,22 +200,69 @@
     }
   }
   class ReferencesDetector {
-    static detect(text) {
+    static detect(text, options = {}) {
       const lines = normalizeText(text).split(/[\n\f]/);
-      const start = lines.findIndex(line => /^\s*(?:(?:\d+|[IVX]+)[.\s]+)?(?:references|bibliography)\s*$/i.test(line));
-      if (start < 0) return { count: null, reason: "No isolated bibliography heading" };
+      const heading = /^\s*(?:(?:\d+|[IVXLCDM]+)[.\s]+)?(?:references(?:\s+and\s+notes)?|bibliography|literature cited|参考文献)\s*[:：]?\s*(?=$|\[\d+\]|\(\d+\))/i;
+      const stop = /^\s*(?:(?:\d+|[IVXLCDM]+)[.\s]+)?(?:appendi(?:x|ces)\b|supplementary\s+(?:material|information)\b|acknowledg(?:e)?ments?\b|author biograph(?:y|ies)\b|author contributions?\b|funding\s*$|data availability\b|(?:declaration of )?competing interests\b|附录)/i;
+      const unknown = reason => ({ count: null, ids: [], style: "unknown", confidence: "unknown", reason });
+      const start = lines.findIndex(line => heading.test(line));
+      if (start < 0) return unknown("No bibliography heading detected");
       const section = [];
+      const first = lines[start].replace(heading, "");
+      if (first.trim()) section.push(first);
       for (const line of lines.slice(start + 1)) {
-        if (/^\s*(?:appendix\b|supplementary\s+(?:material|information)|acknowledg(?:e)?ments?\b|author biographies\b)/i.test(line)) break;
+        if (stop.test(line)) break;
+        if (heading.test(line)) continue; // Repeated running bibliography header.
         section.push(line);
       }
-      for (const pattern of [/^\s*\[(\d+)\]\s+\S/, /^\s*(\d+)\.\s+\p{L}/u]) {
-        const sequence = section.map(line => pattern.exec(line)).filter(Boolean).map(m => Number(m[1]));
-        if (sequence.length >= 3 && sequence.every((n, i) => n === i + 1)) {
-          return { count: sequence.length, reason: "Experimental: consecutive numbered entries" };
+      let foundNumeric = false;
+      const author = /^(?:(?:de|van|von|der|den|del|da|dos|du|le|la)\s+){0,2}([\p{Lu}][\p{L}\p{M}'’\-]+)(?:[ \t]+[\p{Lu}][\p{L}\p{M}'’\-]+){0,2}(?:,[ \t]*|[ \t]+(?=[\p{Lu}]\.?[ ,]))/u;
+      for (const [style, pattern] of [
+        ["numeric-bracket", /^\s*\[(\d{1,4})\]\s*(.*)$/u],
+        ["numeric-parenthesis", /^\s*\((\d{1,4})\)\s*(.*)$/u],
+        ["numeric-dot", /^\s*(\d{1,4})[.)]\s+(.*)$/u]
+      ]) {
+        const entries = new Map(); let conflict = false;
+        for (let i = 0; i < section.length; i++) {
+          const m = pattern.exec(section[i]);
+          if (!m || Number(m[1]) < 1) continue;
+          if (style === "numeric-parenthesis" && /^(?:18|19|20)\d{2}$/.test(m[1]) && author.test((section[i - 1] || "").trim())) continue;
+          foundNumeric = true;
+          let body = m[2].trim();
+          if (!body && section[i + 1] && !pattern.test(section[i + 1])) body = section[i + 1].trim();
+          if (!/\p{L}/u.test(body)) continue;
+          const id = Number(m[1]);
+          const signature = body.toLocaleLowerCase().replace(/\s+/g, " ");
+          if (entries.has(id) && entries.get(id) !== signature) conflict = true;
+          entries.set(id, signature);
+        }
+        const ids = [...entries.keys()].sort((a, b) => a - b);
+        if (!ids.length) continue;
+        if (!conflict && ids.every((n, i) => n === i + 1)) {
+          return { count: ids.length, ids: ids.map(String), style, confidence: "high",
+            reason: "Detected consecutive numbered bibliography entries; duplicate labels counted once" };
         }
       }
-      return { count: null, reason: "Unreliable or author-year style; manual review required" };
+      if (foundNumeric) return unknown("Numbered entries contain gaps, missing text, or conflicting labels; manual review required");
+      if (options.authorYear === false) return unknown("Author-year estimation disabled");
+      // Author-year counts are ALWAYS estimates; use author + early year + title evidence.
+      const year = /\b((?:18|19|20)\d{2}[a-z]?)\b/i;
+      const entries = new Map();
+      for (let i = 0; i < section.length; i++) {
+        let line = section[i].trim();
+        const a = author.exec(line);
+        if (!a) continue;
+        if (!year.test(line.slice(0, 240)) && /^\s*\(?(?:18|19|20)\d{2}/.test(section[i + 1] || "")) line += " " + section[++i].trim();
+        const y = year.exec(line.slice(0, 240));
+        if (!y || y.index < a[0].length) continue;
+        const title = line.slice(y.index + y[0].length).replace(/^[\s).,:;]+/, "");
+        if (!/\p{L}/u.test(title) || title.length < 5) continue;
+        const signature = line.toLocaleLowerCase().replace(/\s+/g, " ");
+        entries.set(signature, `${a[1]} ${y[1]}`);
+      }
+      if (entries.size >= 3) return { count: entries.size, ids: [...entries.values()], style: "author-year", confidence: "estimated",
+        reason: "Estimated author-year bibliography entries; wrapping and corporate authors may affect the count" };
+      return unknown("Insufficient recognizable author-year entries; manual review required");
     }
   }
   function analyze(text, options = {}) {
@@ -222,7 +272,8 @@
     const statements = hasText ? StatementDetector.detect(text) : null;
     const algorithms = hasText ? AlgorithmDetector.detect(text) : null;
     const equations = hasText || /[\d]+\s*[=<>≤≥≠]/u.test(text || "") ? EquationDetector.detect(text) : null;
-    const references = options.references && hasText ? ReferencesDetector.detect(text) : { count: null, reason: "Disabled (experimental)" };
+    const references = options.references && hasText ? ReferencesDetector.detect(text, { authorYear: options.authorYearReferences !== false })
+      : { count: null, ids: [], style: "unknown", confidence: "disabled", reason: "Reference counting disabled or text unavailable" };
     return { words: hasText ? TextStatisticsService.count(text) : null,
       figures: figures?.count ?? null, tables: tables?.count ?? null, references: references.count,
       statements: statements?.count ?? null, algorithms: algorithms?.count ?? null, equations: equations?.count ?? null,
@@ -230,9 +281,10 @@
       algorithmIDs: algorithms?.ids || [], equationIDs: equations?.ids || [],
       equationScope: "Numbered display equations only; inline and unnumbered math excluded",
       figureIDs: figures?.ids || [], tableIDs: tables?.ids || [], referenceReason: references.reason,
+      referenceIDs: references.ids, referenceStyle: references.style, referenceConfidence: references.confidence,
       detectionMethod: "caption-heuristic", noExtractableText: !hasText && !equations };
   }
-  function settingsKey(o) { return `${o.includeSupplementary !== false}:${!!o.references}`; }
+  function settingsKey(o) { return `${o.includeSupplementary !== false}:${!!o.references}:${o.authorYearReferences !== false}`; }
   function cacheValid(c, a, stat, options) {
     return !!c && c.attachmentID === a.id && c.attachmentKey === a.key && c.libraryID === a.libraryID
       && c.fileMTime === stat.lastModified && c.fileSize === stat.size
@@ -241,8 +293,8 @@
   function encodeColumn(record, metric) {
     const n = record?.[metric];
     if (!Number.isSafeInteger(n) || n < 0) return "";
-    const approximate = metric !== "pages" && record.textCompleteness !== "complete";
-    const methods = { figures: "Caption heuristic", tables: "Caption heuristic", references: "Experimental bibliography",
+    const approximate = metric !== "pages" && (record.textCompleteness !== "complete" || metric === "references" && record.referenceConfidence === "estimated");
+    const methods = { figures: "Caption heuristic", tables: "Caption heuristic", references: record.referenceReason || "Detected bibliography entries",
       statements: "Heading heuristic: Proposition + Theorem + Lemma + Corollary; Definition excluded",
       algorithms: "Algorithm heading heuristic", equations: "Numbered display equations only; inline and unnumbered math excluded; heuristic" };
     const coverage = record.textCompleteness === "partial"
@@ -290,7 +342,7 @@
     }
     async idle() { while (this.pending.size) await Promise.allSettled([...this.pending.values()]); }
   }
-  const api = { ALGORITHM_VERSION, normalizeText, removeRepeatedMargins, TextStatisticsService,
+  const api = { ALGORITHM_VERSION, METRICS, DEFAULT_METRICS, normalizeText, removeRepeatedMargins, TextStatisticsService,
     FigureDetector, TableDetector, StatementDetector, AlgorithmDetector, EquationDetector, ReferencesDetector, analyze, settingsKey, cacheValid,
     encodeColumn, selectPrimaryPDF, BackgroundQueue, normalizedID };
   root.PaperStatsCore = api;
