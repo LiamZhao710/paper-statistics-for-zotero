@@ -79,7 +79,7 @@ for directory in ['src','scripts','reports']:
     paths.extend(p for p in (ROOT/directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='reference-recovery-audit.json')
 paths.extend(p for p in (ROOT/'tests').glob('*.cjs'))
 paths.extend(p for p in (ROOT/'tests/fixtures').glob('*.pdf'))
-paths.extend(ROOT/p for p in ['README.md','TEST-REPORT.md','LICENSE','NOTICE','LICENSES/MIT.txt','VERSION-HISTORY.md','package.json','.gitignore','.gitattributes','audit/ENVIRONMENT.md','audit/source-hashes.json'])
+paths.extend(ROOT/p for p in ['README.md','README.zh-CN.md','TEST-REPORT.md','LICENSE','NOTICE','LICENSES/MIT.txt','VERSION-HISTORY.md','package.json','.gitignore','.gitattributes','audit/ENVIRONMENT.md','audit/source-hashes.json'])
 paths=[p for p in paths if p.is_file()]
 with zipfile.ZipFile(sourcezip,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
     for p in sorted(paths):
