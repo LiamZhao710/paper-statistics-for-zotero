@@ -45,4 +45,6 @@ if __name__ == '__main__':
         'Smith, J. (2020). First research article.',
         'Wang, X., 2021. Second research article.',
         'Jones, M. (2022a). Third research article.']]))
+    (root/'merged-references.pdf').write_bytes(pdf([['References',
+        '[1] Smith A. One paper. [2] Wang B. Two paper. [3] Jones C. Three paper.']]))
     print(root)

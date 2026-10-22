@@ -37,7 +37,8 @@ test('pure analysis API allows explicit reference enablement and rejects weak ev
   assert.equal(C.analyze(numbered, {references:true}).references, 3);
   assert.equal(C.ReferencesDetector.detect('Bibliography\n1. Smith\n2. Wang\n3. Jones').count, 3);
   assert.equal(C.ReferencesDetector.detect('References\nSmith, J., 2020\nWang, X., 2021').count, null);
-  assert.equal(C.ReferencesDetector.detect('References\n[1] A\n[3] C\n[4] D').count, null);
+  const incomplete=C.ReferencesDetector.detect('References\n[1] A\n[3] C\n[4] D');
+  assert.equal(incomplete.count,3);assert.equal(incomplete.confidence,'estimated');
 });
 test('sort keys order numerically independent of partial marker or thousands separator', () => {
   const values = [100,7,1200,12,0,8421];

@@ -8,6 +8,7 @@ var PaperStatistics = (() => {
     statements: "命题/定理类", algorithms: "算法数", equations: "编号公式数", references: "参考文献数" };
   let pluginID, rootURI, cachePath, worker, queue, observer, timer, saveTimer, refreshTimer;
   let alive = false, serial = 0, cache = {}, batch = null, diskWrites = Promise.resolve();
+  let manualPath, manualValues = {}, manualWrites = Promise.resolve(), manualStoreHealthy = true;
   const rows = new Map(), tracked = new Set(), epochs = new Map(), replies = new Map();
   const columns = [], menus = [], paneHooks = new Map(), dirtyRows = new Set(), prefObservers = [];
   const columnMetrics = new Map();
@@ -60,6 +61,34 @@ var PaperStatistics = (() => {
   }
   const identity = a => `${a.libraryID}/${a.key}`;
   const cancelled = token => !alive || token?.cancelled;
+  function getEffectiveRecord(item) {
+    return C.applyManualStatistics(rows.get(item.id)?.result, manualValues[identity(item)]);
+  }
+  function setManualValues(item, values) {
+    if (!alive || !item || item.deleted || !(item.isRegularItem() || item.isPDFAttachment())) throw new Error("请选择论文或 PDF 附件。");
+    if (!manualStoreHealthy) throw new Error("手动数据文件无法读取；为保护原数据，未执行覆盖写入。");
+    const parsed = {};
+    for (const [metric, value] of Object.entries(values)) {
+      if (!Object.hasOwn(METRICS, metric)) throw new Error("Unknown statistic: " + metric);
+      parsed[metric] = C.parseManualValue(value);
+    }
+    const key = identity(item);
+    manualWrites = manualWrites.catch(log).then(async () => {
+      const entries = { ...(manualValues[key] || {}) };
+      for (const [metric, value] of Object.entries(parsed)) {
+        if (value === null) delete entries[metric];
+        else entries[metric] = { value, updatedAt: Date.now() };
+      }
+      const next = { ...manualValues };
+      if (Object.keys(entries).length) next[key] = entries; else delete next[key];
+      await IOUtils.writeUTF8(manualPath, JSON.stringify({ schemaVersion: 1, items: next }), { tmpPath: manualPath + ".tmp" });
+      manualValues = next;refresh(item.id);
+    });
+    return manualWrites;
+  }
+  function clearManualValues(item) {
+    return setManualValues(item, Object.fromEntries(Object.keys(METRICS).map(metric => [metric, null])));
+  }
 
   function scheduleSave() {
     clearTimeout(saveTimer);
@@ -204,15 +233,18 @@ var PaperStatistics = (() => {
   function dataProvider(item, metric) {
     if (!(item.isRegularItem() || item.isPDFAttachment())) return "";
     if (!rows.has(item.id) && !queue.pending.has(String(item.id))) void request(item);
-    return C.encodeColumn(rows.get(item.id)?.result, metric);
+    return C.encodeColumn(getEffectiveRecord(item), metric);
   }
 
   function renderPane({ body, item, doc }) {
     const opened = new Set([...body.querySelectorAll("details[open]")].map(d => d.dataset.paperstatsDetails));
+    const draft = body.dataset.paperstatsItem === (item && identity(item))
+      ? new Map([...body.querySelectorAll('input[data-manual-metric][data-dirty="true"]')].map(input => [input.dataset.manualMetric, input.value])) : new Map();
+    body.dataset.paperstatsItem = item ? identity(item) : "";
     body.replaceChildren();
     if (!item) return;
     const state = rows.get(item.id);
-    const r = state?.result;
+    const r = getEffectiveRecord(item);
     const container = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     container.style.cssText = "padding:8px;line-height:1.6;overflow-wrap:anywhere";
     let target = container;
@@ -233,13 +265,15 @@ var PaperStatistics = (() => {
     if (r && selected.length) {
       for (const metric of selected) {
         const line = append(METRICS[metric], C.encodeColumn(r, metric).split("|")[1] || "—", metric);
-        if (metric === "references") line.title = r.referenceReason || "Reference count unavailable";
+        if (r.manualMetrics?.[metric]) line.append(doc.createTextNode("（人工）"));
+        if (metric === "references") line.title = r.manualMetrics?.[metric] ? "人工填写值；恢复自动统计可查看检测结果" : r.referenceReason || "Reference count unavailable";
       }
       target = details("evidence", "检测明细与统计口径");
+      if (Object.keys(r.manualMetrics || {}).length) append("人工覆盖", "带 * 的数值由人工填写；以下编号、分类与覆盖率仍是自动检测结果。");
       append("Text coverage", r.textCompleteness === "partial"
         ? `Partial (${r.indexedPages} / ${r.totalPages} pages extracted)` : r.textCompleteness);
-      append("Analyzed PDF", r.filename);
-      append("Last calculated", new Date(r.calculatedAt).toLocaleString());
+      append("Analyzed PDF", r.filename || "无可用 PDF / 自动值未知");
+      append("Last calculated", r.calculatedAt ? new Date(r.calculatedAt).toLocaleString() : "—");
       append("Method", "Words include captions and references; structural counts are text heuristics.");
       if (selected.includes("figures")) append("Detected figures", r.figureIDs.join(", ") || "—");
       if (selected.includes("tables")) append("Detected tables", r.tableIDs.join(", ") || "—");
@@ -263,6 +297,32 @@ var PaperStatistics = (() => {
     const button = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");
     button.textContent = "Recompute Paper Statistics";
     button.addEventListener("click", () => void startBatch([item], true)); container.append(button);
+    const editor = details("manual", "手动修改统计（留空使用自动值）");
+    const explanation = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
+    explanation.textContent = "人工值显示 *，重新计算不会覆盖。仅作用于当前条目；更换 PDF 后请自行核对。";editor.append(explanation);
+    const inputs = new Map();
+    for (const metric of selected) {
+      const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");label.style.display = "block";
+      const input = doc.createElementNS("http://www.w3.org/1999/xhtml", "input");
+      input.type = "text";input.inputMode = "numeric";input.pattern = "[0-9]*";input.dataset.manualMetric = metric;
+      input.placeholder = "自动";input.style.width = "100px";
+      input.value = draft.has(metric) ? draft.get(metric) : manualValues[identity(item)]?.[metric]?.value ?? "";
+      if (draft.has(metric)) input.dataset.dirty = "true";
+      input.addEventListener("input", () => input.dataset.dirty = "true");
+      label.append(doc.createTextNode(`${LABELS[metric]}（自动：${state?.result?.[metric] ?? "—"}） `), input);editor.append(label);inputs.set(metric, input);
+    }
+    const message = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");message.setAttribute("role", "status");
+    const save = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");save.textContent = "保存人工值";save.dataset.manualSave = "true";
+    save.disabled = !selected.length || !manualStoreHealthy;
+    save.onclick = async () => {
+      save.disabled = true;
+      try { await setManualValues(item, Object.fromEntries([...inputs].map(([metric, input]) => [metric, input.value])));for (const input of inputs.values()) delete input.dataset.dirty;message.textContent = "已保存"; }
+      catch (e) { message.textContent = String(e.message || e); }
+      finally { save.disabled = !selected.length || !manualStoreHealthy; }
+    };
+    const reset = doc.createElementNS("http://www.w3.org/1999/xhtml", "button");reset.textContent = "恢复全部自动统计";reset.dataset.manualReset = "true";
+    reset.onclick = async () => { try { await clearManualValues(item);for (const input of inputs.values()) { input.value = "";delete input.dataset.dirty; } } catch (e) { message.textContent = String(e.message || e); } };
+    editor.append(save, reset, message);
     const settings = details("settings", "显示设置（只显示勾选项）");
     for (const metric of Object.keys(METRICS)) {
       const line = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");
@@ -366,6 +426,14 @@ var PaperStatistics = (() => {
     const dir = PathUtils.join(Zotero.DataDirectory.dir, "paper-statistics");
     await IOUtils.makeDirectory(dir, { ignoreExisting: true });
     cachePath = PathUtils.join(dir, "cache-v1.json");
+    manualPath = PathUtils.join(dir, "manual-overrides-v1.json");
+    try {
+      if (await IOUtils.exists(manualPath)) {
+        const disk = JSON.parse(await IOUtils.readUTF8(manualPath));
+        if (disk.schemaVersion !== 1 || !disk.items || typeof disk.items !== "object" || Array.isArray(disk.items)) throw new Error("Invalid manual statistics store");
+        manualValues = disk.items;
+      }
+    } catch (e) { manualStoreHealthy = false;log(e); }
     try {
       const disk = JSON.parse(await IOUtils.readUTF8(cachePath));
       if (disk.schemaVersion === 1 && disk.attachments && typeof disk.attachments === "object") cache = disk.attachments;
@@ -444,6 +512,7 @@ var PaperStatistics = (() => {
     queue?.close();
     for (const req of replies.values()) req.reject(new Error("Plugin stopped"));
     replies.clear(); worker?.terminate();
+    await manualWrites.catch(log);
     // PDFWorker has no public abort API; in-flight extraction returns and is discarded.
     // No need to hold shutdown open while Zotero's shared worker finishes.
     if (cachePath) await flush();
@@ -459,6 +528,7 @@ var PaperStatistics = (() => {
   }
   const api = { start, stop, loadWindow, unloadWindow, request, startBatch, cancelBatch,
     visibleMetrics, setVisibleMetrics, get preferencePaneID() { return preferencePaneID; },
+    getEffectiveRecord, setManualValues, clearManualValues,
     dataProvider, TextStatisticsService, PdfStatisticsService, getRow: id => rows.get(id),
     whenIdle: () => queue.idle(), get columnIDs() { return [...columns]; }, sectionID: null };
   return api;

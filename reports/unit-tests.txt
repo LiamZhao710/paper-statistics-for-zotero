@@ -2,261 +2,321 @@ TAP version 13
 # Subtest: word normalization, Unicode, scientific tokens, contractions and line-end hyphens
 ok 1 - word normalization, Unicode, scientific tokens, contractions and line-end hyphens
   ---
-  duration_ms: 5.2081
+  duration_ms: 7.4485
   type: 'test'
   ...
 # Subtest: repeated margins are removed only at page edges
 ok 2 - repeated margins are removed only at page edges
   ---
-  duration_ms: 2.0615
+  duration_ms: 1.592
   type: 'test'
   ...
 # Subtest: figures are caption-based, normalized and deduplicated
 ok 3 - figures are caption-based, normalized and deduplicated
   ---
-  duration_ms: 11.1666
+  duration_ms: 11.5658
   type: 'test'
   ...
 # Subtest: tables normalize Roman/Arabic, support two-line IEEE labels and supplementary
 ok 4 - tables normalize Roman/Arabic, support two-line IEEE labels and supplementary
   ---
-  duration_ms: 0.8998
+  duration_ms: 1.1619
   type: 'test'
   ...
 # Subtest: no text has unknown statistics instead of fake zero
 ok 5 - no text has unknown statistics instead of fake zero
   ---
-  duration_ms: 1.8736
+  duration_ms: 1.8086
   type: 'test'
   ...
 # Subtest: pure analysis API allows explicit reference enablement and rejects weak evidence
 ok 6 - pure analysis API allows explicit reference enablement and rejects weak evidence
   ---
-  duration_ms: 4.5215
+  duration_ms: 4.5073
   type: 'test'
   ...
 # Subtest: sort keys order numerically independent of partial marker or thousands separator
 ok 7 - sort keys order numerically independent of partial marker or thousands separator
   ---
-  duration_ms: 7.6011
+  duration_ms: 8.5621
   type: 'test'
   ...
 # Subtest: cache validity covers identity, mtime, size, algorithm and detector settings
 ok 8 - cache validity covers identity, mtime, size, algorithm and detector settings
   ---
-  duration_ms: 0.2563
+  duration_ms: 0.2401
   type: 'test'
   ...
 # Subtest: primary PDF uses available best, then stored, then stable ID; never journal pages
 ok 9 - primary PDF uses available best, then stored, then stable ID; never journal pages
   ---
-  duration_ms: 0.5253
+  duration_ms: 0.4629
   type: 'test'
   ...
 # Subtest: queue defers work, bounds concurrency, deduplicates and cancels queued tasks
 ok 10 - queue defers work, bounds concurrency, deduplicates and cancels queued tasks
   ---
-  duration_ms: 86.7196
+  duration_ms: 77.8756
   type: 'test'
   ...
 # Subtest: fresh complete cache is reused without parsing
 ok 11 - fresh complete cache is reused without parsing
   ---
-  duration_ms: 4.1556
+  duration_ms: 5.1645
   type: 'test'
   ...
 # Subtest: partial index obtains complete text through all-page worker
 ok 12 - partial index obtains complete text through all-page worker
   ---
-  duration_ms: 1.2192
+  duration_ms: 1.6952
   type: 'test'
   ...
 # Subtest: worker failure preserves known partial coverage and its UI marker
 ok 13 - worker failure preserves known partial coverage and its UI marker
   ---
-  duration_ms: 21.2793
+  duration_ms: 18.1931
   type: 'test'
   ...
 # Subtest: stale cache and missing cache cannot resurrect old page metadata
 ok 14 - stale cache and missing cache cannot resurrect old page metadata
   ---
-  duration_ms: 5.0313
+  duration_ms: 4.1986
   type: 'test'
   ...
 # Subtest: force recompute bypasses even fresh complete fulltext cache
 ok 15 - force recompute bypasses even fresh complete fulltext cache
   ---
-  duration_ms: 1.162
+  duration_ms: 1.4974
   type: 'test'
   ...
 # Subtest: unknown extraction coverage never becomes a plain exact word count
 ok 16 - unknown extraction coverage never becomes a plain exact word count
   ---
-  duration_ms: 1.6022
+  duration_ms: 1.6531
+  type: 'test'
+  ...
+# Subtest: merged bibliography paragraphs retain all bracket entry labels
+ok 17 - merged bibliography paragraphs retain all bracket entry labels
+  ---
+  duration_ms: 5.8297
+  type: 'test'
+  ...
+# Subtest: heading merged into prose and spaced heading/brackets are recoverable
+ok 18 - heading merged into prose and spaced heading/brackets are recoverable
+  ---
+  duration_ms: 1.4635
+  type: 'test'
+  ...
+# Subtest: incomplete but substantial numeric bibliography returns detected count with estimate flag
+ok 19 - incomplete but substantial numeric bibliography returns detected count with estimate flag
+  ---
+  duration_ms: 19.4958
+  type: 'test'
+  ...
+# Subtest: sparse or conflicting numbering is still unknown
+ok 20 - sparse or conflicting numbering is still unknown
+  ---
+  duration_ms: 0.6258
+  type: 'test'
+  ...
+# Subtest: a real bibliography heading wins over an earlier prose mention of references
+ok 21 - a real bibliography heading wins over an earlier prose mention of references
+  ---
+  duration_ms: 0.2293
+  type: 'test'
+  ...
+# Subtest: manual values validate integers, allow zero and blank reset, reject unsafe numbers
+ok 22 - manual values validate integers, allow zero and blank reset, reject unsafe numbers
+  ---
+  duration_ms: 0.5408
+  type: 'test'
+  ...
+# Subtest: manual overlay preserves automatic record and labels provenance in columns
+ok 23 - manual overlay preserves automatic record and labels provenance in columns
+  ---
+  duration_ms: 0.5665
+  type: 'test'
+  ...
+# Subtest: manual values exist without PDF or text and never become fake complete coverage
+ok 24 - manual values exist without PDF or text and never become fake complete coverage
+  ---
+  duration_ms: 0.2432
+  type: 'test'
+  ...
+# Subtest: manual overlay rejects unknown or malformed persisted fields
+ok 25 - manual overlay rejects unknown or malformed persisted fields
+  ---
+  duration_ms: 0.3142
+  type: 'test'
+  ...
+# Subtest: manual markers do not affect numeric sort keys
+ok 26 - manual markers do not affect numeric sort keys
+  ---
+  duration_ms: 0.4553
   type: 'test'
   ...
 # Subtest: numbered references support bracket, parenthesis, dot and closing parenthesis
-ok 17 - numbered references support bracket, parenthesis, dot and closing parenthesis
+ok 27 - numbered references support bracket, parenthesis, dot and closing parenthesis
   ---
-  duration_ms: 4.7771
+  duration_ms: 5.0939
   type: 'test'
   ...
 # Subtest: one or two clearly numbered references are valid counts
-ok 18 - one or two clearly numbered references are valid counts
+ok 28 - one or two clearly numbered references are valid counts
   ---
-  duration_ms: 0.731
+  duration_ms: 0.7829
   type: 'test'
   ...
 # Subtest: numbering on separate line and repeated running heading are handled
-ok 19 - numbering on separate line and repeated running heading are handled
+ok 29 - numbering on separate line and repeated running heading are handled
   ---
-  duration_ms: 0.1861
+  duration_ms: 0.1432
   type: 'test'
   ...
 # Subtest: numbered bibliography survives column reorder and exact duplicate labels
-ok 20 - numbered bibliography survives column reorder and exact duplicate labels
+ok 30 - numbered bibliography survives column reorder and exact duplicate labels
   ---
-  duration_ms: 0.7029
+  duration_ms: 0.6635
   type: 'test'
   ...
 # Subtest: gaps, missing bodies and conflicting numbered labels stay unknown
-ok 21 - gaps, missing bodies and conflicting numbered labels stay unknown
+ok 31 - gaps, missing bodies and conflicting numbered labels stay unknown
   ---
-  duration_ms: 0.2374
+  duration_ms: 0.2367
   type: 'test'
   ...
 # Subtest: bibliography limits exclude appendix, author contributions and data statement
-ok 22 - bibliography limits exclude appendix, author contributions and data statement
+ok 32 - bibliography limits exclude appendix, author contributions and data statement
   ---
-  duration_ms: 0.1557
+  duration_ms: 0.1521
   type: 'test'
   ...
 # Subtest: heading and first numbered reference may share a paragraph
-ok 23 - heading and first numbered reference may share a paragraph
+ok 33 - heading and first numbered reference may share a paragraph
   ---
-  duration_ms: 0.1383
+  duration_ms: 0.2025
   type: 'test'
   ...
 # Subtest: APA and Harvard references are explicitly estimated and rendered with tilde
-ok 24 - APA and Harvard references are explicitly estimated and rendered with tilde
+ok 34 - APA and Harvard references are explicitly estimated and rendered with tilde
   ---
-  duration_ms: 20.1201
+  duration_ms: 25.44
   type: 'test'
   ...
 # Subtest: author-year duplicates deduplicate, distinct papers in the same year remain
-ok 25 - author-year duplicates deduplicate, distinct papers in the same year remain
+ok 35 - author-year duplicates deduplicate, distinct papers in the same year remain
   ---
-  duration_ms: 0.3317
+  duration_ms: 0.2399
   type: 'test'
   ...
 # Subtest: author-year year on next line is supported without counting continuation text
-ok 26 - author-year year on next line is supported without counting continuation text
+ok 36 - author-year year on next line is supported without counting continuation text
   ---
-  duration_ms: 0.3896
+  duration_ms: 0.2999
   type: 'test'
   ...
 # Subtest: insufficient author-year evidence and years in ordinary prose stay unknown
-ok 27 - insufficient author-year evidence and years in ordinary prose stay unknown
+ok 37 - insufficient author-year evidence and years in ordinary prose stay unknown
   ---
-  duration_ms: 0.1802
+  duration_ms: 0.1549
   type: 'test'
   ...
 # Subtest: numbered reference confidence does not remove partial extraction marker
-ok 28 - numbered reference confidence does not remove partial extraction marker
+ok 38 - numbered reference confidence does not remove partial extraction marker
   ---
-  duration_ms: 0.3363
+  duration_ms: 0.361
   type: 'test'
   ...
 # Subtest: default visible metrics are compact and user can hide or select any subset
-ok 29 - default visible metrics are compact and user can hide or select any subset
+ok 39 - default visible metrics are compact and user can hide or select any subset
   ---
-  duration_ms: 4.33
+  duration_ms: 3.818
   type: 'test'
   ...
 # Subtest: display choices are independent from extraction settings and cached counts
-ok 30 - display choices are independent from extraction settings and cached counts
+ok 40 - display choices are independent from extraction settings and cached counts
   ---
-  duration_ms: 0.2331
+  duration_ms: 0.1694
   type: 'test'
   ...
 # Subtest: statement total includes four types, excludes definitions/proofs/remarks/assumptions
-ok 31 - statement total includes four types, excludes definitions/proofs/remarks/assumptions
+ok 41 - statement total includes four types, excludes definitions/proofs/remarks/assumptions
   ---
-  duration_ms: 4.3426
+  duration_ms: 5.396
   type: 'test'
   ...
 # Subtest: statements deduplicate by type and ID, not global number, and skip prose mentions
-ok 32 - statements deduplicate by type and ID, not global number, and skip prose mentions
+ok 42 - statements deduplicate by type and ID, not global number, and skip prose mentions
   ---
-  duration_ms: 0.497
+  duration_ms: 0.3055
   type: 'test'
   ...
 # Subtest: unnumbered and Chinese theorem-like headings are supported
-ok 33 - unnumbered and Chinese theorem-like headings are supported
+ok 43 - unnumbered and Chinese theorem-like headings are supported
   ---
-  duration_ms: 1.0397
+  duration_ms: 0.8562
   type: 'test'
   ...
 # Subtest: structural headings skip bibliography and resume in appendix
-ok 34 - structural headings skip bibliography and resume in appendix
+ok 44 - structural headings skip bibliography and resume in appendix
   ---
-  duration_ms: 1.8619
+  duration_ms: 1.7328
   type: 'test'
   ...
 # Subtest: algorithms deduplicate numbered captions and support Roman and separate-line titles
-ok 35 - algorithms deduplicate numbered captions and support Roman and separate-line titles
+ok 45 - algorithms deduplicate numbered captions and support Roman and separate-line titles
   ---
-  duration_ms: 0.7706
+  duration_ms: 0.8
   type: 'test'
   ...
 # Subtest: numbered display equations support sections, appendix labels and subequations
-ok 36 - numbered display equations support sections, appendix labels and subequations
+ok 46 - numbered display equations support sections, appendix labels and subequations
   ---
-  duration_ms: 11.3806
+  duration_ms: 10.7355
   type: 'test'
   ...
 # Subtest: equation number on separate line needs adjacent mathematical evidence
-ok 37 - equation number on separate line needs adjacent mathematical evidence
+ok 47 - equation number on separate line needs adjacent mathematical evidence
   ---
-  duration_ms: 1.3246
+  duration_ms: 0.8661
   type: 'test'
   ...
 # Subtest: equation detector excludes prose references, years, captions, lists and unnumbered math
-ok 38 - equation detector excludes prose references, years, captions, lists and unnumbered math
+ok 48 - equation detector excludes prose references, years, captions, lists and unnumbered math
   ---
-  duration_ms: 0.3038
+  duration_ms: 0.2153
   type: 'test'
   ...
 # Subtest: equation evidence does not cross page or empty-paragraph boundaries
-ok 39 - equation evidence does not cross page or empty-paragraph boundaries
+ok 49 - equation evidence does not cross page or empty-paragraph boundaries
   ---
-  duration_ms: 0.3521
+  duration_ms: 0.2047
   type: 'test'
   ...
 # Subtest: new metrics are null for unreadable PDFs and counted for pure numerical equations
-ok 40 - new metrics are null for unreadable PDFs and counted for pure numerical equations
+ok 50 - new metrics are null for unreadable PDFs and counted for pure numerical equations
   ---
-  duration_ms: 2.6232
+  duration_ms: 1.6277
   type: 'test'
   ...
 # Subtest: new metrics retain numeric sorting and partial coverage indicators
-ok 41 - new metrics retain numeric sorting and partial coverage indicators
+ok 51 - new metrics retain numeric sorting and partial coverage indicators
   ---
-  duration_ms: 7.9242
+  duration_ms: 7.4115
   type: 'test'
   ...
 # Subtest: version 0.1 algorithm caches are invalidated for structural metrics
-ok 42 - version 0.1 algorithm caches are invalidated for structural metrics
+ok 52 - version 0.1 algorithm caches are invalidated for structural metrics
   ---
-  duration_ms: 0.3513
+  duration_ms: 0.2309
   type: 'test'
   ...
-1..42
-# tests 42
+1..52
+# tests 52
 # suites 0
-# pass 42
+# pass 52
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 236.9032
+# duration_ms 244.5443

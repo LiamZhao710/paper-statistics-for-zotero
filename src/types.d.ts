@@ -35,3 +35,12 @@ export interface CachedPaperStatistics extends TextStatistics {
   source: string;
   warning: string | null;
 }
+export interface ManualStatistic {
+  value: number;
+  updatedAt: number;
+}
+export interface ManualStatisticsStore {
+  schemaVersion: 1;
+  /** Key: libraryID/itemKey. Separate from the rebuildable attachment cache. */
+  items: Record<string, Partial<Record<"pages" | "words" | "figures" | "tables" | "statements" | "algorithms" | "equations" | "references", ManualStatistic>>>;
+}

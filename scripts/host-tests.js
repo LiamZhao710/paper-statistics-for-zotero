@@ -86,6 +86,9 @@ async function run() {
     const ar=await api.request(authorPaper,true);report.authorYearSample=ar;
     check('actual PDF author-year references estimated',ar?.references===3 && ar.referenceConfidence==='estimated',ar);
     check('author-year column marks estimate despite complete extraction',api.dataProvider(authorPaper,'references').includes('|~3|'),api.dataProvider(authorPaper,'references'));
+    const mergedPaper=await parent('Paper Statistics merged reference paragraphs');await attach(mergedPaper,'merged-references.pdf');
+    const mergedResult=await api.request(mergedPaper,true);
+    check('actual PDF merged-paragraph references recovered',mergedResult?.references===3 && mergedResult.referenceConfidence==='high',mergedResult?.referenceIDs);
     const blank=await parent('Blank PDF');await attach(blank,'blank.pdf');const br=await api.request(blank,true);
     check('blank PDF pages, unknown words',br?.pages===2 && br.words===null && br.figures===null,br);
     const bad=await parent('Corrupt PDF');await attach(bad,'corrupt.pdf');const badResult=await api.request(bad,true);
@@ -140,6 +143,28 @@ async function run() {
     const authorPane=[...win.document.querySelectorAll('item-pane-custom-section')].find(el=>el.dataset.pane===api.sectionID);
     if(authorPane){authorPane.open=true;authorPane.scrollIntoView({block:'center'});}await sleep(300);
     check('author-year estimated reference count visible in pane',authorPane?.querySelector('[data-statistic="references"]')?.textContent.includes('~3'));
+    const editor=()=>authorPane.querySelector('details[data-paperstats-details="manual"]');
+    editor().open=true;
+    let manualInput=editor().querySelector('input[data-manual-metric="references"]');
+    manualInput.value='42';manualInput.dispatchEvent(new win.Event('input',{bubbles:true}));
+    editor().querySelector('[data-manual-save]').click();await sleep(450);
+    check('manual reference value saved from real pane UI',api.dataProvider(authorPaper,'references').includes('|42*|'),api.dataProvider(authorPaper,'references'));
+    check('manual provenance visible in pane',authorPane.querySelector('[data-statistic="references"]')?.textContent.includes('人工'));
+    check('manual override preserves original automatic result',api.getRow(authorPaper.id).result.references===3 && api.getEffectiveRecord(authorPaper).references===42);
+    manualInput=editor().querySelector('input[data-manual-metric="references"]');manualInput.value='-1';manualInput.dispatchEvent(new win.Event('input',{bubbles:true}));
+    editor().querySelector('[data-manual-save]').click();await sleep(100);
+    check('invalid manual input rejected without replacing saved value',editor().querySelector('[role="status"]')?.textContent.includes('非负整数') && api.getEffectiveRecord(authorPaper).references===42);
+    await api.request(authorPaper,true);await sleep(350);
+    check('recompute preserves manual value',api.getEffectiveRecord(authorPaper).references===42);
+    check('unsaved input survives background rerender',editor().querySelector('input[data-manual-metric="references"]').value==='-1');
+    editor().querySelector('[data-manual-reset]').click();await sleep(400);
+    check('reset restores automatic reference result',api.dataProvider(authorPaper,'references').includes('|~3|') && !api.getEffectiveRecord(authorPaper).manualMetrics.references);
+    await api.setManualValues(authorPaper,{references:42});
+    await api.setManualValues(noPDF,{references:7,words:0});
+    check('manual values supported without PDF',api.dataProvider(noPDF,'references').includes('|7*|') && api.dataProvider(noPDF,'words').includes('|0*|'));
+    await api.clearManualValues(noPDF);
+    check('clearing no-PDF manual value restores unknown',api.dataProvider(noPDF,'references')==='');
+    check('manual edits do not alter bibliographic fields',authorPaper.getField('pages')==='123-137' && !authorPaper.getField('Extra'));
     const column=Zotero.ItemTreeManager.getCustomColumns('main').find(c=>c.dataKey===key);
     const cell=column.renderCell(0,api.dataProvider(paper,'words'),{className:'test'},false,win.document);
     check('real document cell rendering',!!cell.textContent && !cell.textContent.startsWith('0000'),cell.textContent);
@@ -158,6 +183,9 @@ async function run() {
     check('display selection survives plugin restart',Zotero.PaperStatistics.visibleMetrics().join(',')==='pages,words,references' && Zotero.PaperStatistics.columnIDs.length===3,Zotero.PaperStatistics.visibleMetrics());
     const restored=await Zotero.PaperStatistics.request(paper);
     check('persistent cache reload',restored?.calculatedAt===replaced.calculatedAt,{restored:restored?.calculatedAt,old:replaced.calculatedAt});
+    check('manual values survive plugin restart',Zotero.PaperStatistics.getEffectiveRecord(authorPaper)?.references===42 && Zotero.PaperStatistics.dataProvider(authorPaper,'references').includes('|42*|'));
+    const manualDisk=JSON.parse(await IOUtils.readUTF8(PathUtils.join(root,'data','paper-statistics','manual-overrides-v1.json')));
+    check('manual store separate from automatic cache',manualDisk.items[`${authorPaper.libraryID}/${authorPaper.key}`]?.references?.value===42);
     // Let manager-generated row/column refreshes finish before closing the host.
     await Zotero.DB.waitForTransaction();
     await sleep(1000);

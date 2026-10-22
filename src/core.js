@@ -1,7 +1,7 @@
 /* Pure algorithms shared by the background worker and Node tests. */
 (function (root) {
   "use strict";
-  const ALGORITHM_VERSION = 3;
+  const ALGORITHM_VERSION = 4;
   const METRICS = { pages: "PDF Pages", words: "Words", figures: "Figures", tables: "Tables",
     statements: "Statements", algorithms: "Algorithms", equations: "Numbered Equations", references: "References" };
   const DEFAULT_METRICS = ["pages", "words", "references"];
@@ -201,8 +201,14 @@
   }
   class ReferencesDetector {
     static detect(text, options = {}) {
-      const lines = normalizeText(text).split(/[\n\f]/);
-      const heading = /^\s*(?:(?:\d+|[IVXLCDM]+)[.\s]+)?(?:references(?:\s+and\s+notes)?|bibliography|literature cited|参考文献)\s*[:：]?\s*(?=$|\[\d+\]|\(\d+\))/i;
+      let normalized = normalizeText(text).replace(/\bR[ \t]+E[ \t]+F[ \t]+E[ \t]+R[ \t]+E[ \t]+N[ \t]+C[ \t]+E[ \t]+S\b/gi, "References");
+      const heading = /^\s*(?:(?:\d+|[IVXLCDM]+)[.\s]+)?(?:references(?:\s+and\s+notes)?|bibliography|literature cited|参考文献)\s*[.:：]?\s*(?=$|\[\s*\d+\s*\]|\(\d+\)|1[.)]\s)/i;
+      let lines = normalized.split(/[\n\f]/);
+      // Prefer isolated headings; do not promote a prose "see references [1]" before a real section.
+      if (!lines.some(line => heading.test(line))) {
+        normalized = normalized.replace(/\b(References|Bibliography|Literature cited)\s*[.:：]?\s*(?=\[\s*\d+\s*\]|\(\d+\)|1[.)]\s)/gi, "\n$1\n");
+        lines = normalized.split(/[\n\f]/);
+      }
       const stop = /^\s*(?:(?:\d+|[IVXLCDM]+)[.\s]+)?(?:appendi(?:x|ces)\b|supplementary\s+(?:material|information)\b|acknowledg(?:e)?ments?\b|author biograph(?:y|ies)\b|author contributions?\b|funding\s*$|data availability\b|(?:declaration of )?competing interests\b|附录)/i;
       const unknown = reason => ({ count: null, ids: [], style: "unknown", confidence: "unknown", reason });
       const start = lines.findIndex(line => heading.test(line));
@@ -215,7 +221,7 @@
         if (heading.test(line)) continue; // Repeated running bibliography header.
         section.push(line);
       }
-      let foundNumeric = false;
+      let foundNumeric = false, estimatedNumeric = null;
       const author = /^(?:(?:de|van|von|der|den|del|da|dos|du|le|la)\s+){0,2}([\p{Lu}][\p{L}\p{M}'’\-]+)(?:[ \t]+[\p{Lu}][\p{L}\p{M}'’\-]+){0,2}(?:,[ \t]*|[ \t]+(?=[\p{Lu}]\.?[ ,]))/u;
       for (const [style, pattern] of [
         ["numeric-bracket", /^\s*\[(\d{1,4})\]\s*(.*)$/u],
@@ -223,13 +229,29 @@
         ["numeric-dot", /^\s*(\d{1,4})[.)]\s+(.*)$/u]
       ]) {
         const entries = new Map(); let conflict = false;
-        for (let i = 0; i < section.length; i++) {
+        const candidates = [];
+        if (style === "numeric-bracket") {
+          const joined = section.join("\n");
+          const labels = [...joined.matchAll(/\[\s*(\d{1,4})\s*\]/g)];
+          for (let i = 0; i < labels.length; i++) {
+            const label = labels[i];
+            const body = joined.slice(label.index + label[0].length, labels[i + 1]?.index ?? joined.length).trim();
+            const prefix = joined.slice(joined.lastIndexOf("\n", label.index - 1) + 1, label.index);
+            // Inline labels need author-like capitalization. Do not count prose citations.
+            if (prefix.trim() && !/^(?:[\p{Lu}\p{Lo}"“‘]|(?:de|van|von|del)\s)/u.test(body)) continue;
+            candidates.push({ id: label[1], body, previous: "" });
+          }
+        }
+        else for (let i = 0; i < section.length; i++) {
           const m = pattern.exec(section[i]);
+          if (m) candidates.push({ id: m[1], body: m[2].trim() || (!pattern.test(section[i + 1] || "") ? (section[i + 1] || "").trim() : ""), previous: section[i - 1] || "" });
+        }
+        for (const candidate of candidates) {
+          const m = [null, candidate.id, candidate.body];
           if (!m || Number(m[1]) < 1) continue;
-          if (style === "numeric-parenthesis" && /^(?:18|19|20)\d{2}$/.test(m[1]) && author.test((section[i - 1] || "").trim())) continue;
+          if (style === "numeric-parenthesis" && /^(?:18|19|20)\d{2}$/.test(m[1]) && author.test(candidate.previous.trim())) continue;
           foundNumeric = true;
           let body = m[2].trim();
-          if (!body && section[i + 1] && !pattern.test(section[i + 1])) body = section[i + 1].trim();
           if (!/\p{L}/u.test(body)) continue;
           const id = Number(m[1]);
           const signature = body.toLocaleLowerCase().replace(/\s+/g, " ");
@@ -242,7 +264,12 @@
           return { count: ids.length, ids: ids.map(String), style, confidence: "high",
             reason: "Detected consecutive numbered bibliography entries; duplicate labels counted once" };
         }
+        if (!conflict && ids.length >= 3 && ids[0] === 1 && ids.length / ids[ids.length - 1] >= 0.7) {
+          estimatedNumeric = { count: ids.length, ids: ids.map(String), style, confidence: "estimated",
+            reason: "Estimated detected bibliography entries: some labels are missing; this is not the largest label or a verified total" };
+        }
       }
+      if (estimatedNumeric) return estimatedNumeric;
       if (foundNumeric) return unknown("Numbered entries contain gaps, missing text, or conflicting labels; manual review required");
       if (options.authorYear === false) return unknown("Author-year estimation disabled");
       // Author-year counts are ALWAYS estimates; use author + early year + title evidence.
@@ -285,6 +312,22 @@
       detectionMethod: "caption-heuristic", noExtractableText: !hasText && !equations };
   }
   function settingsKey(o) { return `${o.includeSupplementary !== false}:${!!o.references}:${o.authorYearReferences !== false}`; }
+  function parseManualValue(value) {
+    if (value === null || value === undefined || typeof value === "string" && !value.trim()) return null;
+    if (typeof value !== "number" && (typeof value !== "string" || !/^\d+$/.test(value.trim()))) throw new Error("请输入非负整数；留空表示使用自动值。");
+    const n = Number(value);
+    if (!Number.isSafeInteger(n) || n < 0) throw new Error("请输入范围内的非负整数。");
+    return n;
+  }
+  function applyManualStatistics(automatic, manual = {}) {
+    const valid = Object.fromEntries(Object.entries(manual).filter(([key, entry]) => Object.hasOwn(METRICS, key)
+      && Number.isSafeInteger(entry?.value) && entry.value >= 0));
+    if (!automatic && !Object.keys(valid).length) return null;
+    const result = { textCompleteness: "unknown", figureIDs: [], tableIDs: [], referenceIDs: [], statementIDs: [], algorithmIDs: [], equationIDs: [], ...automatic,
+      manualMetrics: valid, automaticValues: Object.fromEntries(Object.keys(METRICS).map(key => [key, automatic?.[key] ?? null])) };
+    for (const [metric, entry] of Object.entries(valid)) result[metric] = entry.value;
+    return result;
+  }
   function cacheValid(c, a, stat, options) {
     return !!c && c.attachmentID === a.id && c.attachmentKey === a.key && c.libraryID === a.libraryID
       && c.fileMTime === stat.lastModified && c.fileSize === stat.size
@@ -293,15 +336,16 @@
   function encodeColumn(record, metric) {
     const n = record?.[metric];
     if (!Number.isSafeInteger(n) || n < 0) return "";
-    const approximate = metric !== "pages" && (record.textCompleteness !== "complete" || metric === "references" && record.referenceConfidence === "estimated");
+    const manual = record.manualMetrics?.[metric];
+    const approximate = !manual && metric !== "pages" && (record.textCompleteness !== "complete" || metric === "references" && record.referenceConfidence === "estimated");
     const methods = { figures: "Caption heuristic", tables: "Caption heuristic", references: record.referenceReason || "Detected bibliography entries",
       statements: "Heading heuristic: Proposition + Theorem + Lemma + Corollary; Definition excluded",
       algorithms: "Algorithm heading heuristic", equations: "Numbered display equations only; inline and unnumbered math excluded; heuristic" };
     const coverage = record.textCompleteness === "partial"
       ? `Partial text: ${record.indexedPages ?? "?"} / ${record.totalPages ?? "?"} pages extracted`
       : `Text coverage: ${record.textCompleteness}`;
-    return String(n).padStart(16, "0") + "|" + (approximate ? "~" : "") + n.toLocaleString("en-US")
-      + "|" + coverage + (methods[metric] ? "; " + methods[metric] : "");
+    return String(n).padStart(16, "0") + "|" + (approximate ? "~" : "") + n.toLocaleString("en-US") + (manual ? "*" : "")
+      + "|" + (manual ? `人工值 / Manual override; automatic value: ${record.automaticValues?.[metric] ?? "unknown"}; recomputation preserves this override` : coverage + (methods[metric] ? "; " + methods[metric] : ""));
   }
   async function selectPrimaryPDF(item, getItem) {
     if (item.isPDFAttachment?.()) return !item.deleted && await item.getFilePathAsync() ? item : null;
@@ -344,7 +388,7 @@
   }
   const api = { ALGORITHM_VERSION, METRICS, DEFAULT_METRICS, normalizeText, removeRepeatedMargins, TextStatisticsService,
     FigureDetector, TableDetector, StatementDetector, AlgorithmDetector, EquationDetector, ReferencesDetector, analyze, settingsKey, cacheValid,
-    encodeColumn, selectPrimaryPDF, BackgroundQueue, normalizedID };
+    encodeColumn, parseManualValue, applyManualStatistics, selectPrimaryPDF, BackgroundQueue, normalizedID };
   root.PaperStatsCore = api;
   if (typeof module !== "undefined") module.exports = api;
 })(globalThis);
