@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: AGPL-3.0-only
+ * Copyright (c) 2026 Paper Statistics contributors. See LICENSE and NOTICE.
+ */
 pref("extensions.paperstatistics.includeSupplementary", true);
 pref("extensions.paperstatistics.authorYearReferences", true);
 pref("extensions.paperstatistics.show.pages", true);

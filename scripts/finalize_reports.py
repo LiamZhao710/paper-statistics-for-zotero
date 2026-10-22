@@ -10,16 +10,29 @@ assert host.get('passed') and all(c['passed'] for c in host['checks']), 'Host te
 assert host.get('pluginVersion')==version, 'Host must test this release version'
 assert host.get('testedXpiSHA256')==hashlib.sha256(xpi.read_bytes()).hexdigest(), 'Host must test these exact XPI bytes'
 host['xpiSHA256']=hashlib.sha256(xpi.read_bytes()).hexdigest()
+def sanitize(value):
+    if isinstance(value, dict):
+        return {key:sanitize(item) for key,item in value.items()}
+    if isinstance(value, list):
+        return [sanitize(item) for item in value]
+    if isinstance(value, str):
+        pattern=re.escape(ROOT.as_posix()).replace('/',r'[\\/]+')
+        return re.sub(pattern,'<PROJECT>',value,flags=re.I)
+    return value
+host=sanitize(host)
 (reports/'host-integration.json').write_text(json.dumps(host,ensure_ascii=False,indent=2),encoding='utf-8')
 result=subprocess.run(['node','--test','--test-reporter=tap',*[str(p.relative_to(ROOT)) for p in sorted((ROOT/'tests').glob('*.test.cjs'))]],cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 assert result.returncode==0,result.stdout.decode('utf-8',errors='replace')
 (reports/'unit-tests.txt').write_bytes(result.stdout)
 test_count=int(re.search(rb'# tests (\d+)',result.stdout).group(1))
 hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((ROOT/'audit').iterdir()) if p.suffix in ['.js','.mjs']}
-(ROOT/'audit/source-hashes.json').write_text(json.dumps({'source':'Zotero 10.0.6 installed omni.ja files','sha256':hashes},indent=2),encoding='utf-8')
+if hashes:
+    (ROOT/'audit/source-hashes.json').write_text(json.dumps({'source':'Zotero 10.0.6 installed omni.ja files','sha256':hashes},indent=2),encoding='utf-8')
 text=f'''# 验证报告
 
 日期：2026-10-23（Europe/Berlin）。生产版本：{version}。目标：Zotero 10.0.x。
+
+0.4.1 起采用 AGPL-3.0-only，XPI 包含完整 LICENSE 与 NOTICE，源码发行包提供对应源码和构建脚本。0.1.0—0.4.0 原 MIT 发行包保持不变；此次功能与算法版本不变。
 
 ## 已确认
 
@@ -63,10 +76,11 @@ text=f'''# 验证报告
 sourcezip=dist/f'paper-statistics-{version}-source.zip'
 paths=[]
 for directory in ['src','scripts','reports']:
-    paths.extend(p for p in (ROOT/directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts)
+    paths.extend(p for p in (ROOT/directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='reference-recovery-audit.json')
 paths.extend(p for p in (ROOT/'tests').glob('*.cjs'))
 paths.extend(p for p in (ROOT/'tests/fixtures').glob('*.pdf'))
-paths.extend(ROOT/p for p in ['README.md','TEST-REPORT.md','LICENSE','package.json','.gitignore','audit/ENVIRONMENT.md','audit/source-hashes.json'])
+paths.extend(ROOT/p for p in ['README.md','TEST-REPORT.md','LICENSE','NOTICE','LICENSES/MIT.txt','VERSION-HISTORY.md','package.json','.gitignore','.gitattributes','audit/ENVIRONMENT.md','audit/source-hashes.json'])
+paths=[p for p in paths if p.is_file()]
 with zipfile.ZipFile(sourcezip,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
     for p in sorted(paths):
         info=zipfile.ZipInfo('paper-statistics/'+p.relative_to(ROOT).as_posix(),(2026,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED

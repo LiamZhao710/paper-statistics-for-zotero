@@ -20,9 +20,10 @@ with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o644 << 16
         z.writestr(info, path.read_bytes())
-    info = zipfile.ZipInfo('LICENSE', (2026, 1, 1, 0, 0, 0))
-    info.compress_type = zipfile.ZIP_DEFLATED
-    z.writestr(info, (ROOT / 'LICENSE').read_bytes())
+    for name in ['LICENSE', 'NOTICE']:
+        info = zipfile.ZipInfo(name, (2026, 1, 1, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        z.writestr(info, (ROOT / name).read_bytes())
 with zipfile.ZipFile(target) as z:
     assert z.testzip() is None
     assert all(n in z.namelist() for n in required)

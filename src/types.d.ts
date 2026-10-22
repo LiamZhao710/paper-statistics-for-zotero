@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: AGPL-3.0-only
+ * Copyright (c) 2026 Paper Statistics contributors. See LICENSE and NOTICE.
+ */
 /** Runtime implementation is dependency-free JavaScript; these describe persisted data. */
 export interface TextStatistics {
   words: number | null;

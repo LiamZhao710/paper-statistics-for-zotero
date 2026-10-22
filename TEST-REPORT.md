@@ -1,6 +1,8 @@
 # 验证报告
 
-日期：2026-10-23（Europe/Berlin）。生产版本：0.4.0。目标：Zotero 10.0.x。
+日期：2026-10-23（Europe/Berlin）。生产版本：0.4.1。目标：Zotero 10.0.x。
+
+0.4.1 起采用 AGPL-3.0-only，XPI 包含完整 LICENSE 与 NOTICE，源码发行包提供对应源码和构建脚本。0.1.0—0.4.0 原 MIT 发行包保持不变；此次功能与算法版本不变。
 
 ## 已确认
 
@@ -15,7 +17,7 @@
 - 先将全文索引限制为 1/3 页；插件得到完整 3/3 页文本，同时原索引仍是 1/3，确认统计过程没有重写索引。
 - 覆盖无附件、空白 PDF、损坏 PDF、外部替换 PDF、宿主 collation 数值顺序、实际 HTML cell、真实侧栏 DOM、批次取消、AddonManager 停用清理/重新启用及持久缓存命中。
 - 所有写入测试只发生在工作区 tests/host 的独立数据目录；没有向用户日常 profile 安装生产插件。
-- XPI ZIP 结构、完整性与 manifest 已检查。XPI SHA-256：`60c3eeb64e8e76b9d572cbe54bc377fbd86a4a5613608f02457465d1bda31ad0`。
+- XPI ZIP 结构、完整性与 manifest 已检查。XPI SHA-256：`b17a6be40a19f965f7331832bc7ca3baeec006d6e512982f7f5187381570e9c9`。
 
 ## 发现并修复
 

@@ -1,0 +1,18 @@
+Paper Statistics for Zotero
+Copyright (c) 2026 Paper Statistics contributors
+SPDX-License-Identifier: AGPL-3.0-only
+
+Version 0.4.1 and subsequent versions, unless explicitly stated otherwise,
+are licensed under the GNU Affero General Public License, version 3 only.
+You may redistribute and/or modify the program under those terms.
+This program is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the accompanying LICENSE for the full terms.
+
+Corresponding source: the matching release source archive, or the matching
+version tag at https://github.com/LiamZhao710/paper-statistics-for-zotero
+The source archive contains the source files and build/test scripts.
+
+Historical versions 0.1.0 through 0.4.0 remain licensed under MIT, as stated
+in their original tags and XPI packages. Their MIT text is retained at
+LICENSES/MIT.txt. This license change does not revoke those existing grants.

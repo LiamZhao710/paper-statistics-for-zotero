@@ -1,6 +1,6 @@
 {
   "host": "10.0.6",
-  "startedAt": "2026-10-22T23:13:44.746Z",
+  "startedAt": "2026-10-22T23:45:02.588Z",
   "checks": [
     {
       "name": "isolated data directory",
@@ -61,8 +61,8 @@
       "name": "actual PDF pages, not journal range",
       "passed": true,
       "details": {
-        "attachmentID": 80,
-        "attachmentKey": "7VPJZD2A",
+        "attachmentID": 2,
+        "attachmentKey": "GHBPAD6R",
         "libraryID": 1,
         "pages": 3,
         "words": 43,
@@ -105,21 +105,21 @@
         "totalPages": 3,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792710817953,
+        "fileMTime": 1792712199997,
         "fileSize": 1496,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\7VPJZD2A\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\GHBPAD6R\\paper.pdf",
         "filename": "paper.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710826994
+        "calculatedAt": 1792712704968
       }
     },
     {
       "name": "all-page worker extraction",
       "passed": true,
       "details": {
-        "attachmentID": 80,
-        "attachmentKey": "7VPJZD2A",
+        "attachmentID": 2,
+        "attachmentKey": "GHBPAD6R",
         "libraryID": 1,
         "pages": 3,
         "words": 43,
@@ -162,13 +162,13 @@
         "totalPages": 3,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792710817953,
+        "fileMTime": 1792712199997,
         "fileSize": 1496,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\7VPJZD2A\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\GHBPAD6R\\paper.pdf",
         "filename": "paper.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710826994
+        "calculatedAt": 1792712704968
       }
     },
     {
@@ -281,8 +281,8 @@
       "name": "actual PDF author-year references estimated",
       "passed": true,
       "details": {
-        "attachmentID": 85,
-        "attachmentKey": "SH33GY94",
+        "attachmentID": 7,
+        "attachmentKey": "8QIJJUS2",
         "libraryID": 1,
         "pages": 1,
         "words": 17,
@@ -319,13 +319,13 @@
         "totalPages": 1,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792710817957,
+        "fileMTime": 1792712199990,
         "fileSize": 751,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\SH33GY94\\author-year.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\8QIJJUS2\\author-year.pdf",
         "filename": "author-year.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710828541
+        "calculatedAt": 1792712706458
       }
     },
     {
@@ -346,8 +346,8 @@
       "name": "blank PDF pages, unknown words",
       "passed": true,
       "details": {
-        "attachmentID": 89,
-        "attachmentKey": "68PWTVRR",
+        "attachmentID": 11,
+        "attachmentKey": "6AS36WX8",
         "libraryID": 1,
         "pages": 2,
         "words": null,
@@ -375,21 +375,21 @@
         "totalPages": 2,
         "source": "zotero-pdf-worker",
         "warning": "No extractable text. OCR is not provided.",
-        "fileMTime": 1792710817955,
+        "fileMTime": 1792712199991,
         "fileSize": 828,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\68PWTVRR\\blank.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\6AS36WX8\\blank.pdf",
         "filename": "blank.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710830022
+        "calculatedAt": 1792712707549
       }
     },
     {
       "name": "corrupt PDF does not become zero",
       "passed": true,
       "details": {
-        "attachmentID": 91,
-        "attachmentKey": "8EIF8PHY",
+        "attachmentID": 13,
+        "attachmentKey": "57KPXEJU",
         "libraryID": 1,
         "pages": null,
         "words": null,
@@ -417,13 +417,13 @@
         "totalPages": null,
         "source": "none",
         "warning": "InvalidPDFException: Worker action 'pdf.getFulltext' failed: {\"error\":\"{\\\"message\\\":\\\"Invalid PDF structure.\\\",\\\"name\\\":\\\"InvalidPDFException\\\"}\"} No extractable text. OCR is not provided.",
-        "fileMTime": 1792710817955,
+        "fileMTime": 1792712199993,
         "fileSize": 24,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\8EIF8PHY\\corrupt.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\57KPXEJU\\corrupt.pdf",
         "filename": "corrupt.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710830494
+        "calculatedAt": 1792712708103
       }
     },
     {
@@ -438,8 +438,8 @@
       "name": "external replacement invalidates cache",
       "passed": true,
       "details": {
-        "attachmentID": 80,
-        "attachmentKey": "7VPJZD2A",
+        "attachmentID": 2,
+        "attachmentKey": "GHBPAD6R",
         "libraryID": 1,
         "pages": 1,
         "words": 5,
@@ -474,13 +474,13 @@
         "totalPages": 1,
         "source": "zotero-pdf-worker",
         "warning": null,
-        "fileMTime": 1792710817955,
+        "fileMTime": 1792712199998,
         "fileSize": 640,
-        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\7VPJZD2A\\paper.pdf",
+        "filePath": "<PROJECT>\\tests\\host\\data\\storage\\GHBPAD6R\\paper.pdf",
         "filename": "paper.pdf",
         "algorithmVersion": 4,
         "settingsKey": "true:true:true",
-        "calculatedAt": 1792710830628
+        "calculatedAt": 1792712708258
       }
     },
     {
@@ -496,16 +496,16 @@
           "initialized": true,
           "hidden": false,
           "skipRender": false,
-          "itemID": 79,
+          "itemID": 1,
           "open": true,
-          "html": "<item-pane-custom-section xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" data-sidenav-options=\"{&quot;l10nID&quot;:&quot;paperstats-section&quot;,&quot;icon&quot;:&quot;jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg&quot;}\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" style=\"--custom-section-icon-light: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg'); --custom-section-icon-dark: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg');\" tabType=\"library\"><collapsible-section custom=\"true\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" extra-buttons=\"\" class=\"\" style=\"--open-height: auto;\" open=\"\" data-l10n-id=\"paperstats-section\" data-l10n-args=\"undefined\" label=\"论文统计\" tooltiptext=\"本地 PDF 统计\"><div xmlns=\"http://www.w3.org/1999/xhtml\" role=\"button\" class=\"head\" tabindex=\"0\" aria-expanded=\"true\" aria-label=\"论文统计\"><div class=\"title-box\"><span class=\"title\">论文统计</span><span class=\"summary\"></span></div><popupset xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\"><menupopup><menuitem class=\"menuitem-iconic zotero-menuitem-pin\" data-l10n-id=\"pin-section\" label=\"固定此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-unpin\" data-l10n-id=\"unpin-section\" label=\"取消固定此栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-collapse-others\" data-l10n-id=\"collapse-other-sections\" label=\"折叠其他栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-expand-all\" data-l10n-id=\"expand-all-sections\" label=\"展开所有栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-up\" data-l10n-id=\"sidenav-reorder-up\" label=\"上移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-down\" data-l10n-id=\"sidenav-reorder-down\" label=\"下移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-reset\" data-l10n-id=\"sidenav-reorder-reset\" label=\"恢复栏顺序\"/></menupopup></popupset><toolbarbutton xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" class=\"twisty\" tabindex=\"0\" tooltip=\"dynamic-tooltip\" data-l10n-attrs=\"dynamic-tooltiptext\" data-l10n-args=\"{&quot;section&quot;:&quot;&quot;}\" data-l10n-id=\"section-button-collapse\" dynamic-tooltiptext=\"折叠此栏\" label=\"折叠  栏\"><image class=\"toolbarbutton-icon\" label=\"折叠  栏\"/><label class=\"toolbarbutton-text\" crop=\"end\" flex=\"1\" value=\"折叠  栏\"/></toolbarbutton></div><html:div xmlns:html=\"http://www.w3.org/1999/xhtml\" data-type=\"body\" data-paperstats-item=\"1/X3SFL3PG\"><html:div style=\"padding: 8px; line-height: 1.6; overflow-wrap: anywhere;\"><html:div data-statistic=\"pages\"><html:strong>PDF Pages: </html:strong>1</html:div><html:div data-statistic=\"words\"><html:strong>Words: </html:strong>5</html:div><html:div data-statistic=\"figures\"><html:strong>Figures:"
+          "html": "<item-pane-custom-section xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" data-sidenav-options=\"{&quot;l10nID&quot;:&quot;paperstats-section&quot;,&quot;icon&quot;:&quot;jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg&quot;}\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" style=\"--custom-section-icon-light: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg'); --custom-section-icon-dark: url('jar:file:///<PROJECT>/tests/host/profile/extensions/paper-statistics@local.zotero.xpi!/icon.svg');\" tabType=\"library\"><collapsible-section custom=\"true\" data-pane=\"paper-statistics\\@local\\.zotero-paperstats\" extra-buttons=\"\" class=\"\" style=\"--open-height: auto;\" open=\"\" data-l10n-id=\"paperstats-section\" data-l10n-args=\"undefined\" label=\"论文统计\" tooltiptext=\"本地 PDF 统计\"><div xmlns=\"http://www.w3.org/1999/xhtml\" role=\"button\" class=\"head\" tabindex=\"0\" aria-expanded=\"true\" aria-label=\"论文统计\"><div class=\"title-box\"><span class=\"title\">论文统计</span><span class=\"summary\"></span></div><popupset xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\"><menupopup><menuitem class=\"menuitem-iconic zotero-menuitem-pin\" data-l10n-id=\"pin-section\" label=\"固定此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-unpin\" data-l10n-id=\"unpin-section\" label=\"取消固定此栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-collapse-others\" data-l10n-id=\"collapse-other-sections\" label=\"折叠其他栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-expand-all\" data-l10n-id=\"expand-all-sections\" label=\"展开所有栏\"/><menuseparator/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-up\" data-l10n-id=\"sidenav-reorder-up\" label=\"上移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-down\" data-l10n-id=\"sidenav-reorder-down\" label=\"下移此栏\"/><menuitem class=\"menuitem-iconic zotero-menuitem-reorder-reset\" data-l10n-id=\"sidenav-reorder-reset\" label=\"恢复栏顺序\"/></menupopup></popupset><toolbarbutton xmlns=\"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul\" class=\"twisty\" tabindex=\"0\" tooltip=\"dynamic-tooltip\" data-l10n-attrs=\"dynamic-tooltiptext\" data-l10n-args=\"{&quot;section&quot;:&quot;&quot;}\" data-l10n-id=\"section-button-collapse\" dynamic-tooltiptext=\"折叠此栏\" label=\"折叠  栏\"><image class=\"toolbarbutton-icon\" label=\"折叠  栏\"/><label class=\"toolbarbutton-text\" crop=\"end\" flex=\"1\" value=\"折叠  栏\"/></toolbarbutton></div><html:div xmlns:html=\"http://www.w3.org/1999/xhtml\" data-type=\"body\" data-paperstats-item=\"1/5BUV944Z\"><html:div style=\"padding: 8px; line-height: 1.6; overflow-wrap: anywhere;\"><html:div data-statistic=\"pages\"><html:strong>PDF Pages: </html:strong>1</html:div><html:div data-statistic=\"words\"><html:strong>Words: </html:strong>5</html:div><html:div data-statistic=\"figures\">"
         }
       }
     },
     {
       "name": "new metrics and scope rendered in pane",
       "passed": true,
-      "details": "论文统计PDF Pages: 3Words: 75Figures: 0Tables: 0Statements: 4Algorithms: 2Numbered Equations: 4References: —检测明细与统计口径Text coverage: completeAnalyzed PDF: structures.pdfLast calculated: 2026/10/23 01:13:47Method: Words include captions and references; structural counts are text heuristics.Detected figures: —Detected tables: —Statement breakdown: Proposition 1; Theorem 1; Lemma 1; Corollary 1. Definitions excluded.Detected statements: proposition:1, theorem:1, lemma:2.1, corollary:A.1Detected algorithms: 1, 2Detected equations: 1, 2A, 2B, A.1Equation scope: Numbered display equations only; inline and unnumbered math excludedReference method: unknown; No bibliography heading detectedDetected references: —Recompute Paper Statistics手动修改统计（留空使用自动值）人工值显示 *，重新计算不会覆盖。仅作用于当前条目；更换 PDF 后请自行核对。PDF 页数（自动：3） 词数（自动：75） 图数（自动：0） 表数（自动：0） 命题/定理类（自动：4） 算法数（自动：2） 编号公式数（自动：4） 参考文献数（自动：—） 保存人工值恢复全部自动统计显示设置（只显示勾选项）PDF 页数 / PDF Pages词数 / Words图数 / Figures表数 / Tables命题/定理类 / Statements算法数 / Algorithms编号公式数 / Numbered Equations参考文献数 / References打开完整设置"
+      "details": "论文统计PDF Pages: 3Words: 75Figures: 0Tables: 0Statements: 4Algorithms: 2Numbered Equations: 4References: —检测明细与统计口径Text coverage: completeAnalyzed PDF: structures.pdfLast calculated: 2026/10/23 01:45:05Method: Words include captions and references; structural counts are text heuristics.Detected figures: —Detected tables: —Statement breakdown: Proposition 1; Theorem 1; Lemma 1; Corollary 1. Definitions excluded.Detected statements: proposition:1, theorem:1, lemma:2.1, corollary:A.1Detected algorithms: 1, 2Detected equations: 1, 2A, 2B, A.1Equation scope: Numbered display equations only; inline and unnumbered math excludedReference method: unknown; No bibliography heading detectedDetected references: —Recompute Paper Statistics手动修改统计（留空使用自动值）人工值显示 *，重新计算不会覆盖。仅作用于当前条目；更换 PDF 后请自行核对。PDF 页数（自动：3） 词数（自动：75） 图数（自动：0） 表数（自动：0） 命题/定理类（自动：4） 算法数（自动：2） 编号公式数（自动：4） 参考文献数（自动：—） 保存人工值恢复全部自动统计显示设置（只显示勾选项）PDF 页数 / PDF Pages词数 / Words图数 / Figures表数 / Tables命题/定理类 / Statements算法数 / Algorithms编号公式数 / Numbered Equations参考文献数 / References打开完整设置"
     },
     {
       "name": "unchecked columns unregistered",
@@ -635,8 +635,8 @@
       "name": "persistent cache reload",
       "passed": true,
       "details": {
-        "restored": 1792710830628,
-        "old": 1792710830628
+        "restored": 1792712708258,
+        "old": 1792712708258
       }
     },
     {
@@ -648,11 +648,11 @@
       "passed": true
     }
   ],
-  "pluginVersion": "0.4.0",
-  "testedXpiSHA256": "60c3eeb64e8e76b9d572cbe54bc377fbd86a4a5613608f02457465d1bda31ad0",
+  "pluginVersion": "0.4.1",
+  "testedXpiSHA256": "b17a6be40a19f965f7331832bc7ca3baeec006d6e512982f7f5187381570e9c9",
   "sample": {
-    "attachmentID": 80,
-    "attachmentKey": "7VPJZD2A",
+    "attachmentID": 2,
+    "attachmentKey": "GHBPAD6R",
     "libraryID": 1,
     "pages": 3,
     "words": 43,
@@ -695,17 +695,17 @@
     "totalPages": 3,
     "source": "zotero-pdf-worker",
     "warning": null,
-    "fileMTime": 1792710817953,
+    "fileMTime": 1792712199997,
     "fileSize": 1496,
-    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\7VPJZD2A\\paper.pdf",
+    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\GHBPAD6R\\paper.pdf",
     "filename": "paper.pdf",
     "algorithmVersion": 4,
     "settingsKey": "true:true:true",
-    "calculatedAt": 1792710826994
+    "calculatedAt": 1792712704968
   },
   "structureSample": {
-    "attachmentID": 83,
-    "attachmentKey": "GUA5ZMSU",
+    "attachmentID": 5,
+    "attachmentKey": "PJ29Z5N9",
     "libraryID": 1,
     "pages": 3,
     "words": 75,
@@ -751,17 +751,17 @@
     "totalPages": 3,
     "source": "zotero-pdf-worker",
     "warning": null,
-    "fileMTime": 1792710817955,
+    "fileMTime": 1792712200001,
     "fileSize": 1768,
-    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\GUA5ZMSU\\structures.pdf",
+    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\PJ29Z5N9\\structures.pdf",
     "filename": "structures.pdf",
     "algorithmVersion": 4,
     "settingsKey": "true:true:true",
-    "calculatedAt": 1792710827912
+    "calculatedAt": 1792712705831
   },
   "authorYearSample": {
-    "attachmentID": 85,
-    "attachmentKey": "SH33GY94",
+    "attachmentID": 7,
+    "attachmentKey": "8QIJJUS2",
     "libraryID": 1,
     "pages": 1,
     "words": 17,
@@ -798,16 +798,16 @@
     "totalPages": 1,
     "source": "zotero-pdf-worker",
     "warning": null,
-    "fileMTime": 1792710817957,
+    "fileMTime": 1792712199990,
     "fileSize": 751,
-    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\SH33GY94\\author-year.pdf",
+    "filePath": "<PROJECT>\\tests\\host\\data\\storage\\8QIJJUS2\\author-year.pdf",
     "filename": "author-year.pdf",
     "algorithmVersion": 4,
     "settingsKey": "true:true:true",
-    "calculatedAt": 1792710828541
+    "calculatedAt": 1792712706458
   },
   "paneDOMMatches": 3,
   "passed": true,
-  "finishedAt": "2026-10-22T23:14:01.857Z",
-  "xpiSHA256": "60c3eeb64e8e76b9d572cbe54bc377fbd86a4a5613608f02457465d1bda31ad0"
+  "finishedAt": "2026-10-22T23:45:18.566Z",
+  "xpiSHA256": "b17a6be40a19f965f7331832bc7ca3baeec006d6e512982f7f5187381570e9c9"
 }

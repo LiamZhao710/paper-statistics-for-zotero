@@ -1,6 +1,6 @@
 {
   "name": "paper-statistics-for-zotero",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Local PDF statistics for Zotero 10",
   "scripts": {
@@ -8,5 +8,5 @@
     "build": "python scripts/build.py"
   },
   "engines": { "node": ">=18" },
-  "license": "MIT"
+  "license": "AGPL-3.0-only"
 }
